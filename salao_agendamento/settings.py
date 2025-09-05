@@ -33,6 +33,8 @@ CSRF_TRUSTED_ORIGINS = [
     'https://*.manusvm.computer',
     'http://localhost:8000',
     'http://127.0.0.1:8000',
+    'https://*.replit.dev',
+    'https://7d5a1075-2847-4d5c-9a9d-dc9170acf1ec-00-kwdx5bbbnvz3.kirk.replit.dev',
 ]
 
 
