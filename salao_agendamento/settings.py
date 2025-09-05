@@ -28,7 +28,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-# CSRF settings for Replit environment
+# CSRF settings for Replit environment (iframe-friendly)
 CSRF_TRUSTED_ORIGINS = [
     'https://*.manusvm.computer',
     'http://localhost:8000',
@@ -37,17 +37,23 @@ CSRF_TRUSTED_ORIGINS = [
     'https://7d5a1075-2847-4d5c-9a9d-dc9170acf1ec-00-kwdx5bbbnvz3.kirk.replit.dev',
 ]
 
-# CSRF settings for development in Replit
+# CSRF settings optimized for Replit iframe environment
 CSRF_COOKIE_SECURE = False
-CSRF_COOKIE_HTTPONLY = False  
-CSRF_COOKIE_SAMESITE = 'Lax'
-CSRF_USE_SESSIONS = False  # Use cookies instead of sessions
+CSRF_COOKIE_HTTPONLY = False
+CSRF_COOKIE_SAMESITE = 'None'  # Allow cross-site for iframe
+CSRF_USE_SESSIONS = True  # Use sessions instead of cookies for CSRF
 CSRF_COOKIE_NAME = 'csrftoken'
 CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
+CSRF_COOKIE_DOMAIN = None  # Let Django auto-detect
 
-# Session settings
+# Session settings for iframe compatibility
 SESSION_COOKIE_SECURE = False
-SESSION_COOKIE_SAMESITE = 'Lax'
+SESSION_COOKIE_SAMESITE = 'None'  # Allow cross-site for iframe
+SESSION_COOKIE_HTTPONLY = True
+SESSION_SAVE_EVERY_REQUEST = True
+
+# Frame options for iframe support
+X_FRAME_OPTIONS = 'SAMEORIGIN'
 
 
 # Application definition
