@@ -28,7 +28,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-# CSRF settings
+# CSRF settings for Replit environment
 CSRF_TRUSTED_ORIGINS = [
     'https://*.manusvm.computer',
     'http://localhost:8000',
@@ -37,11 +37,17 @@ CSRF_TRUSTED_ORIGINS = [
     'https://7d5a1075-2847-4d5c-9a9d-dc9170acf1ec-00-kwdx5bbbnvz3.kirk.replit.dev',
 ]
 
-# Additional settings for Replit environment
-CSRF_COOKIE_SECURE = False  # Allow over HTTP in development
-CSRF_COOKIE_HTTPONLY = False
-CSRF_USE_SESSIONS = True
+# CSRF settings for development in Replit
+CSRF_COOKIE_SECURE = False
+CSRF_COOKIE_HTTPONLY = False  
+CSRF_COOKIE_SAMESITE = 'Lax'
+CSRF_USE_SESSIONS = False  # Use cookies instead of sessions
+CSRF_COOKIE_NAME = 'csrftoken'
+CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
+
+# Session settings
 SESSION_COOKIE_SECURE = False
+SESSION_COOKIE_SAMESITE = 'Lax'
 
 
 # Application definition
