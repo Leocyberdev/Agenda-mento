@@ -37,6 +37,12 @@ CSRF_TRUSTED_ORIGINS = [
     'https://7d5a1075-2847-4d5c-9a9d-dc9170acf1ec-00-kwdx5bbbnvz3.kirk.replit.dev',
 ]
 
+# Additional settings for Replit environment
+CSRF_COOKIE_SECURE = False  # Allow over HTTP in development
+CSRF_COOKIE_HTTPONLY = False
+CSRF_USE_SESSIONS = True
+SESSION_COOKIE_SECURE = False
+
 
 # Application definition
 
