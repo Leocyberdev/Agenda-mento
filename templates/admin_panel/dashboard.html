@@ -1,0 +1,204 @@
+{% extends 'admin_panel/base_admin.html' %}
+
+{% block title %}Dashboard Administrativo{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-tachometer-alt me-2"></i>Dashboard Administrativo
+    </h1>
+</div>
+
+<!-- Cards de Estatísticas -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Comerciantes Ativos
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_comerciantes }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-store fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Total de Usuários
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_usuarios }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Total de Agendamentos
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_agendamentos }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Sistema
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">Online</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-server fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Comerciantes Recentes -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-store me-2"></i>Comerciantes Recentes
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if comerciantes_recentes %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Salão</th>
+                                    <th>Proprietário</th>
+                                    <th>Data</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for comerciante in comerciantes_recentes %}
+                                <tr>
+                                    <td>{{ comerciante.nome_salao }}</td>
+                                    <td>{{ comerciante.user.get_full_name }}</td>
+                                    <td>{{ comerciante.data_criacao|date:"d/m/Y" }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center">
+                        <a href="{% url 'admin_panel:comerciantes_list' %}" class="btn btn-primary btn-sm">
+                            Ver Todos
+                        </a>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">Nenhum comerciante cadastrado ainda.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Agendamentos Recentes -->
+    <div class="col-lg-6 mb-4">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-calendar-check me-2"></i>Agendamentos Recentes
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if agendamentos_recentes %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Salão</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for agendamento in agendamentos_recentes %}
+                                <tr>
+                                    <td>{{ agendamento.cliente.nome }}</td>
+                                    <td>{{ agendamento.comerciante.nome_salao }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if agendamento.status == 'concluido' %}success{% elif agendamento.status == 'cancelado' %}danger{% else %}primary{% endif %}">
+                                            {{ agendamento.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted text-center">Nenhum agendamento registrado ainda.</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Ações Rápidas -->
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-bolt me-2"></i>Ações Rápidas
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-4 mb-3">
+                        <a href="{% url 'admin_panel:comerciante_create' %}" class="btn btn-primary btn-block">
+                            <i class="fas fa-plus me-2"></i>Novo Comerciante
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{% url 'admin_panel:comerciantes_list' %}" class="btn btn-info btn-block">
+                            <i class="fas fa-list me-2"></i>Gerenciar Comerciantes
+                        </a>
+                    </div>
+                    <div class="col-md-4 mb-3">
+                        <a href="{% url 'accounts:profile' %}" class="btn btn-secondary btn-block">
+                            <i class="fas fa-user-cog me-2"></i>Configurações
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+

@@ -1,0 +1,215 @@
+{% extends 'admin_panel/base_admin.html' %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-{% if action == 'create' %}plus{% else %}edit{% endif %} me-2"></i>{{ title }}
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'admin_panel:comerciantes_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Voltar
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-info-circle me-2"></i>Informações do Comerciante
+                </h6>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Dados do Usuário -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2">
+                                <i class="fas fa-user me-2"></i>Dados do Usuário
+                            </h6>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="username" class="form-label">Usuário *</label>
+                            <input type="text" class="form-control" id="username" name="username" 
+                                   value="{% if comerciante %}{{ comerciante.user.username }}{% endif %}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{% if comerciante %}{{ comerciante.user.email }}{% endif %}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="first_name" class="form-label">Nome *</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" 
+                                   value="{% if comerciante %}{{ comerciante.user.first_name }}{% endif %}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="last_name" class="form-label">Sobrenome *</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" 
+                                   value="{% if comerciante %}{{ comerciante.user.last_name }}{% endif %}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="password" class="form-label">
+                                Senha {% if action == 'edit' %}(deixe em branco para manter){% else %}*{% endif %}
+                            </label>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   {% if action == 'create' %}required{% endif %}>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="telefone" class="form-label">Telefone Pessoal</label>
+                            <input type="text" class="form-control" id="telefone" name="telefone" 
+                                   value="{% if comerciante %}{{ comerciante.user.telefone }}{% endif %}">
+                        </div>
+                    </div>
+                    
+                    <!-- Dados do Salão -->
+                    <div class="row mb-3 mt-4">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2">
+                                <i class="fas fa-store me-2"></i>Dados do Salão
+                            </h6>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-8">
+                            <label for="nome_salao" class="form-label">Nome do Salão *</label>
+                            <input type="text" class="form-control" id="nome_salao" name="nome_salao" 
+                                   value="{% if comerciante %}{{ comerciante.nome_salao }}{% endif %}" required>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="cnpj" class="form-label">CNPJ</label>
+                            <input type="text" class="form-control" id="cnpj" name="cnpj" 
+                                   value="{% if comerciante %}{{ comerciante.cnpj }}{% endif %}" 
+                                   placeholder="00.000.000/0000-00">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="endereco" class="form-label">Endereço *</label>
+                        <textarea class="form-control" id="endereco" name="endereco" rows="3" required>{% if comerciante %}{{ comerciante.endereco }}{% endif %}</textarea>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="telefone_comercial" class="form-label">Telefone Comercial *</label>
+                            <input type="text" class="form-control" id="telefone_comercial" name="telefone_comercial" 
+                                   value="{% if comerciante %}{{ comerciante.telefone_comercial }}{% endif %}" required>
+                        </div>
+                        {% if action == 'edit' %}
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="ativo" name="ativo" 
+                                       {% if comerciante.ativo %}checked{% endif %}>
+                                <label class="form-check-label" for="ativo">
+                                    Comerciante Ativo
+                                </label>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="horario_funcionamento" class="form-label">Horário de Funcionamento *</label>
+                        <textarea class="form-control" id="horario_funcionamento" name="horario_funcionamento" 
+                                  rows="3" required placeholder="Ex: Segunda a Sexta: 8h às 18h, Sábado: 8h às 16h">{% if comerciante %}{{ comerciante.horario_funcionamento }}{% endif %}</textarea>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'admin_panel:comerciantes_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            {% if action == 'create' %}Criar Comerciante{% else %}Salvar Alterações{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-info-circle me-2"></i>Informações
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-lightbulb me-2"></i>Dicas:</h6>
+                    <ul class="mb-0">
+                        <li>O usuário será usado para login no sistema</li>
+                        <li>O email deve ser único no sistema</li>
+                        <li>O CNPJ é opcional mas recomendado</li>
+                        <li>Seja detalhado no horário de funcionamento</li>
+                    </ul>
+                </div>
+                
+                {% if action == 'edit' and comerciante %}
+                <div class="alert alert-secondary">
+                    <h6><i class="fas fa-calendar me-2"></i>Informações:</h6>
+                    <p><strong>Criado em:</strong><br>{{ comerciante.data_criacao|date:"d/m/Y H:i" }}</p>
+                    <p><strong>Último login:</strong><br>
+                        {% if comerciante.user.last_login %}
+                            {{ comerciante.user.last_login|date:"d/m/Y H:i" }}
+                        {% else %}
+                            Nunca fez login
+                        {% endif %}
+                    </p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Máscara para CNPJ
+document.getElementById('cnpj').addEventListener('input', function (e) {
+    let value = e.target.value.replace(/\D/g, '');
+    value = value.replace(/^(\d{2})(\d)/, '$1.$2');
+    value = value.replace(/^(\d{2})\.(\d{3})(\d)/, '$1.$2.$3');
+    value = value.replace(/\.(\d{3})(\d)/, '.$1/$2');
+    value = value.replace(/(\d{4})(\d)/, '$1-$2');
+    e.target.value = value;
+});
+
+// Máscara para telefones
+function maskPhone(input) {
+    input.addEventListener('input', function (e) {
+        let value = e.target.value.replace(/\D/g, '');
+        if (value.length <= 10) {
+            value = value.replace(/^(\d{2})(\d)/, '($1) $2');
+            value = value.replace(/(\d{4})(\d)/, '$1-$2');
+        } else {
+            value = value.replace(/^(\d{2})(\d)/, '($1) $2');
+            value = value.replace(/(\d{5})(\d)/, '$1-$2');
+        }
+        e.target.value = value;
+    });
+}
+
+maskPhone(document.getElementById('telefone'));
+maskPhone(document.getElementById('telefone_comercial'));
+</script>
+{% endblock %}
+

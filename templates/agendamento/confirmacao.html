@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendamento Confirmado - {{ agendamento.comerciante.nome_salao }}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #8B4513;
+            --secondary-color: #D2691E;
+            --success-color: #28a745;
+            --text-dark: #2c3e50;
+            --bg-light: #f8f9fa;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--bg-light) 0%, #e9ecef 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+        
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            background: var(--success-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 2rem;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        .card {
+            border: none;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .card-header {
+            background: linear-gradient(135deg, var(--success-color) 0%, #20c997 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+            border: none;
+        }
+        
+        .info-item {
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid #e9ecef;
+            transition: background-color 0.3s ease;
+        }
+        
+        .info-item:hover {
+            background-color: #f8f9fa;
+        }
+        
+        .info-item:last-child {
+            border-bottom: none;
+        }
+        
+        .info-icon {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-right: 1rem;
+            flex-shrink: 0;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: var(--secondary-color);
+            border-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        
+        .btn-outline-primary {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-outline-primary:hover {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            transform: translateY(-2px);
+        }
+        
+        .alert {
+            border-radius: 15px;
+            border: none;
+        }
+        
+        .qr-code {
+            text-align: center;
+            padding: 2rem;
+            background: white;
+            border-radius: 15px;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-header">
+                        <div class="success-icon">
+                            <i class="fas fa-check fa-3x text-white"></i>
+                        </div>
+                        <h2 class="mb-0">Agendamento Confirmado!</h2>
+                        <p class="mb-0 opacity-75">Seu horário foi reservado com sucesso</p>
+                    </div>
+                    
+                    <div class="card-body p-0">
+                        <!-- Informações do Agendamento -->
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-store"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Salão</h6>
+                                <p class="mb-0 text-muted">{{ agendamento.comerciante.nome_salao }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-scissors"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Serviço</h6>
+                                <p class="mb-0 text-muted">{{ agendamento.servico.nome }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-user-tie"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Profissional</h6>
+                                <p class="mb-0 text-muted">{{ agendamento.funcionario.user.get_full_name }}</p>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-calendar"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Data e Horário</h6>
+                                <p class="mb-0 text-muted">
+                                    {{ agendamento.data_agendamento|date:"d/m/Y" }} às {{ agendamento.data_agendamento|time:"H:i" }}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-user"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Cliente</h6>
+                                <p class="mb-0 text-muted">{{ agendamento.cliente.nome }}</p>
+                                <small class="text-muted">{{ agendamento.cliente.telefone }}</small>
+                            </div>
+                        </div>
+                        
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-dollar-sign"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Valor</h6>
+                                <p class="mb-0 text-primary fw-bold">R$ {{ agendamento.servico.preco }}</p>
+                            </div>
+                        </div>
+                        
+                        {% if agendamento.observacoes %}
+                        <div class="info-item">
+                            <div class="info-icon">
+                                <i class="fas fa-comment"></i>
+                            </div>
+                            <div>
+                                <h6 class="mb-1">Observações</h6>
+                                <p class="mb-0 text-muted">{{ agendamento.observacoes }}</p>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="card-footer bg-light p-4">
+                        <!-- Informações Importantes -->
+                        <div class="alert alert-info">
+                            <h6><i class="fas fa-info-circle me-2"></i>Informações Importantes:</h6>
+                            <ul class="mb-0">
+                                <li>Chegue com 10 minutos de antecedência</li>
+                                <li>Em caso de cancelamento, avise com pelo menos 2 horas de antecedência</li>
+                                <li>Guarde este número do agendamento: <strong>#{{ agendamento.id }}</strong></li>
+                            </ul>
+                        </div>
+                        
+                        <!-- Contato do Salão -->
+                        <div class="row mb-4">
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-map-marker-alt me-2"></i>Endereço:</h6>
+                                <p class="text-muted">{{ agendamento.comerciante.endereco }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <h6><i class="fas fa-phone me-2"></i>Telefone:</h6>
+                                <p class="text-muted">{{ agendamento.comerciante.telefone_comercial }}</p>
+                            </div>
+                        </div>
+                        
+                        <!-- Ações -->
+                        <div class="text-center">
+                            <button class="btn btn-primary me-3" onclick="compartilharAgendamento()">
+                                <i class="fas fa-share me-2"></i>Compartilhar
+                            </button>
+                            <button class="btn btn-outline-primary me-3" onclick="adicionarCalendario()">
+                                <i class="fas fa-calendar-plus me-2"></i>Adicionar ao Calendário
+                            </button>
+                            <a href="/agendamento/{{ agendamento.comerciante.id }}/" class="btn btn-outline-secondary">
+                                <i class="fas fa-plus me-2"></i>Novo Agendamento
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        function compartilharAgendamento() {
+            const texto = `Agendamento confirmado!
+            
+Salão: {{ agendamento.comerciante.nome_salao }}
+Serviço: {{ agendamento.servico.nome }}
+Profissional: {{ agendamento.funcionario.user.get_full_name }}
+Data: {{ agendamento.data_agendamento|date:"d/m/Y" }} às {{ agendamento.data_agendamento|time:"H:i" }}
+Valor: R$ {{ agendamento.servico.preco }}
+
+Endereço: {{ agendamento.comerciante.endereco }}
+Telefone: {{ agendamento.comerciante.telefone_comercial }}`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Agendamento Confirmado',
+                    text: texto
+                });
+            } else {
+                // Fallback para navegadores que não suportam Web Share API
+                navigator.clipboard.writeText(texto).then(() => {
+                    alert('Informações copiadas para a área de transferência!');
+                });
+            }
+        }
+        
+        function adicionarCalendario() {
+            const startDate = new Date('{{ agendamento.data_agendamento|date:"Y-m-d H:i" }}');
+            const endDate = new Date(startDate.getTime() + ({{ agendamento.servico.duracao_minutos }} * 60000));
+            
+            const formatDate = (date) => {
+                return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+            };
+            
+            const eventDetails = {
+                title: '{{ agendamento.servico.nome }} - {{ agendamento.comerciante.nome_salao }}',
+                start: formatDate(startDate),
+                end: formatDate(endDate),
+                description: `Serviço: {{ agendamento.servico.nome }}\\nProfissional: {{ agendamento.funcionario.user.get_full_name }}\\nValor: R$ {{ agendamento.servico.preco }}`,
+                location: '{{ agendamento.comerciante.endereco }}'
+            };
+            
+            const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(eventDetails.title)}&dates=${eventDetails.start}/${eventDetails.end}&details=${encodeURIComponent(eventDetails.description)}&location=${encodeURIComponent(eventDetails.location)}`;
+            
+            window.open(googleCalendarUrl, '_blank');
+        }
+        
+        // Animação de entrada
+        document.addEventListener('DOMContentLoaded', function() {
+            const card = document.querySelector('.card');
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            
+            setTimeout(() => {
+                card.style.transition = 'all 0.6s ease';
+                card.style.opacity = '1';
+                card.style.transform = 'translateY(0)';
+            }, 100);
+        });
+    </script>
+</body>
+</html>
+

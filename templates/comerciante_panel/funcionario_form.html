@@ -1,0 +1,224 @@
+{% extends 'comerciante_panel/base_comerciante.html' %}
+
+{% block title %}{{ title }} - {{ comerciante.nome_salao }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-{% if action == 'create' %}user-plus{% else %}user-edit{% endif %} me-2"></i>{{ title }}
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'comerciante_panel:funcionarios_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Voltar
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-info-circle me-2"></i>Informações do Funcionário
+                </h6>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Dados do Usuário -->
+                    <div class="row mb-3">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2">
+                                <i class="fas fa-user me-2"></i>Dados Pessoais
+                            </h6>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="username" class="form-label">Usuário *</label>
+                            <input type="text" class="form-control" id="username" name="username" 
+                                   value="{% if funcionario %}{{ funcionario.user.username }}{% endif %}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="email" class="form-label">Email *</label>
+                            <input type="email" class="form-control" id="email" name="email" 
+                                   value="{% if funcionario %}{{ funcionario.user.email }}{% endif %}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="first_name" class="form-label">Nome *</label>
+                            <input type="text" class="form-control" id="first_name" name="first_name" 
+                                   value="{% if funcionario %}{{ funcionario.user.first_name }}{% endif %}" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="last_name" class="form-label">Sobrenome *</label>
+                            <input type="text" class="form-control" id="last_name" name="last_name" 
+                                   value="{% if funcionario %}{{ funcionario.user.last_name }}{% endif %}" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="password" class="form-label">
+                                Senha {% if action == 'edit' %}(deixe em branco para manter){% else %}*{% endif %}
+                            </label>
+                            <input type="password" class="form-control" id="password" name="password" 
+                                   {% if action == 'create' %}required{% endif %}>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="telefone" class="form-label">Telefone</label>
+                            <input type="text" class="form-control" id="telefone" name="telefone" 
+                                   value="{% if funcionario %}{{ funcionario.user.telefone }}{% endif %}">
+                        </div>
+                    </div>
+                    
+                    <!-- Dados Profissionais -->
+                    <div class="row mb-3 mt-4">
+                        <div class="col-12">
+                            <h6 class="text-primary border-bottom pb-2">
+                                <i class="fas fa-briefcase me-2"></i>Dados Profissionais
+                            </h6>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="especialidades" class="form-label">Especialidades *</label>
+                        <textarea class="form-control" id="especialidades" name="especialidades" 
+                                  rows="3" required placeholder="Ex: Corte masculino, Barba, Coloração">{% if funcionario %}{{ funcionario.especialidades }}{% endif %}</textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="horario_trabalho" class="form-label">Horário de Trabalho *</label>
+                        <textarea class="form-control" id="horario_trabalho" name="horario_trabalho" 
+                                  rows="3" required placeholder="Ex: Segunda a Sexta: 8h às 18h, Sábado: 8h às 16h">{% if funcionario %}{{ funcionario.horario_trabalho }}{% endif %}</textarea>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="comissao_percentual" class="form-label">Comissão (%)</label>
+                            <input type="number" class="form-control" id="comissao_percentual" name="comissao_percentual" 
+                                   min="0" max="100" step="0.01" 
+                                   value="{% if funcionario %}{{ funcionario.comissao_percentual }}{% else %}30{% endif %}">
+                        </div>
+                        {% if action == 'edit' %}
+                        <div class="col-md-6">
+                            <label class="form-label">Status</label>
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="ativo" name="ativo" 
+                                       {% if funcionario.ativo %}checked{% endif %}>
+                                <label class="form-check-label" for="ativo">
+                                    Funcionário Ativo
+                                </label>
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'comerciante_panel:funcionarios_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>
+                            {% if action == 'create' %}Criar Funcionário{% else %}Salvar Alterações{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-info-circle me-2"></i>Informações
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-lightbulb me-2"></i>Dicas:</h6>
+                    <ul class="mb-0">
+                        <li>O usuário será usado para login no sistema</li>
+                        <li>O email deve ser único no sistema</li>
+                        <li>Seja específico nas especialidades</li>
+                        <li>Defina horários claros de trabalho</li>
+                        <li>A comissão é calculada sobre os serviços</li>
+                    </ul>
+                </div>
+                
+                {% if action == 'edit' and funcionario %}
+                <div class="alert alert-secondary">
+                    <h6><i class="fas fa-calendar me-2"></i>Informações:</h6>
+                    <p><strong>Contratado em:</strong><br>{{ funcionario.data_contratacao|date:"d/m/Y H:i" }}</p>
+                    <p><strong>Último login:</strong><br>
+                        {% if funcionario.user.last_login %}
+                            {{ funcionario.user.last_login|date:"d/m/Y H:i" }}
+                        {% else %}
+                            Nunca fez login
+                        {% endif %}
+                    </p>
+                    <p><strong>Total de agendamentos:</strong><br>{{ funcionario.agendamentos.count }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if action == 'create' %}
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-key me-2"></i>Acesso ao Sistema
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Importante:</h6>
+                    <p class="mb-0">Após criar o funcionário, você poderá gerar as credenciais de acesso para que ele possa fazer login no sistema e visualizar seus agendamentos.</p>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Máscara para telefone
+document.getElementById('telefone').addEventListener('input', function (e) {
+    let value = e.target.value.replace(/\D/g, '');
+    if (value.length <= 10) {
+        value = value.replace(/^(\d{2})(\d)/, '($1) $2');
+        value = value.replace(/(\d{4})(\d)/, '$1-$2');
+    } else {
+        value = value.replace(/^(\d{2})(\d)/, '($1) $2');
+        value = value.replace(/(\d{5})(\d)/, '$1-$2');
+    }
+    e.target.value = value;
+});
+
+// Validação do formulário
+document.querySelector('form').addEventListener('submit', function(e) {
+    const especialidades = document.getElementById('especialidades').value.trim();
+    const horario = document.getElementById('horario_trabalho').value.trim();
+    
+    if (especialidades.length < 10) {
+        e.preventDefault();
+        alert('Por favor, descreva as especialidades com mais detalhes (mínimo 10 caracteres).');
+        return;
+    }
+    
+    if (horario.length < 10) {
+        e.preventDefault();
+        alert('Por favor, descreva o horário de trabalho com mais detalhes (mínimo 10 caracteres).');
+        return;
+    }
+});
+</script>
+{% endblock %}
+

@@ -1,0 +1,236 @@
+{% extends 'comerciante_panel/base_comerciante.html' %}
+
+{% block title %}Funcionários - {{ comerciante.nome_salao }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-users me-2"></i>Funcionários
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'comerciante_panel:funcionario_create' %}" class="btn btn-primary">
+            <i class="fas fa-user-plus me-2"></i>Novo Funcionário
+        </a>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-6">
+                <label for="search" class="form-label">Buscar</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       value="{{ search }}" placeholder="Nome, usuário ou especialidade">
+            </div>
+            <div class="col-md-3">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">Todos</option>
+                    <option value="ativo" {% if status == 'ativo' %}selected{% endif %}>Ativo</option>
+                    <option value="inativo" {% if status == 'inativo' %}selected{% endif %}>Inativo</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-search me-1"></i>Filtrar
+                </button>
+                <a href="{% url 'comerciante_panel:funcionarios_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-1"></i>Limpar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lista de Funcionários -->
+<div class="card">
+    <div class="card-body">
+        {% if page_obj %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Funcionário</th>
+                            <th>Contato</th>
+                            <th>Especialidades</th>
+                            <th>Horário</th>
+                            <th>Comissão</th>
+                            <th>Status</th>
+                            <th>Contratação</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for funcionario in page_obj %}
+                        <tr>
+                            <td>
+                                <div class="d-flex align-items-center">
+                                    <div class="avatar-sm bg-primary rounded-circle d-flex align-items-center justify-content-center me-3">
+                                        <i class="fas fa-user text-white"></i>
+                                    </div>
+                                    <div>
+                                        <strong>{{ funcionario.user.get_full_name }}</strong>
+                                        <br><small class="text-muted">@{{ funcionario.user.username }}</small>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                {{ funcionario.user.email }}
+                                {% if funcionario.user.telefone %}
+                                    <br><small class="text-muted">{{ funcionario.user.telefone }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <span class="badge bg-info">{{ funcionario.especialidades|truncatechars:30 }}</span>
+                            </td>
+                            <td>
+                                <small>{{ funcionario.horario_trabalho|truncatechars:20 }}</small>
+                            </td>
+                            <td>
+                                <span class="badge bg-success">{{ funcionario.comissao_percentual }}%</span>
+                            </td>
+                            <td>
+                                {% if funcionario.ativo %}
+                                    <span class="badge bg-success">Ativo</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inativo</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ funcionario.data_contratacao|date:"d/m/Y" }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'comerciante_panel:funcionario_edit' funcionario.pk %}" 
+                                       class="btn btn-sm btn-outline-primary" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    <button type="button" class="btn btn-sm btn-outline-info" 
+                                            title="Criar Login" onclick="criarLogin({{ funcionario.pk }})">
+                                        <i class="fas fa-key"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginação -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Paginação">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                                Primeira
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                                Anterior
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                                Próxima
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                                Última
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-users fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Nenhum funcionário encontrado</h5>
+                <p class="text-muted">Comece criando o primeiro funcionário do seu salão.</p>
+                <a href="{% url 'comerciante_panel:funcionario_create' %}" class="btn btn-primary">
+                    <i class="fas fa-user-plus me-2"></i>Criar Primeiro Funcionário
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Modal para criar login -->
+<div class="modal fade" id="loginModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Dados de Login do Funcionário</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle me-2"></i>Informações de Acesso</h6>
+                    <p><strong>Usuário:</strong> <span id="modalUsername"></span></p>
+                    <p><strong>Senha:</strong> <span id="modalPassword"></span></p>
+                    <p class="mb-0"><strong>URL de Acesso:</strong> <span id="modalUrl"></span></p>
+                </div>
+                <p class="text-muted">Compartilhe essas informações com o funcionário para que ele possa acessar o sistema.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <button type="button" class="btn btn-primary" onclick="copiarDados()">
+                    <i class="fas fa-copy me-2"></i>Copiar Dados
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function criarLogin(funcionarioId) {
+    // Simular dados de login (em uma implementação real, isso viria do backend)
+    const funcionarios = {
+        {% for funcionario in page_obj %}
+        {{ funcionario.pk }}: {
+            username: '{{ funcionario.user.username }}',
+            password: 'senha123', // Senha padrão ou gerada
+            nome: '{{ funcionario.user.get_full_name }}'
+        },
+        {% endfor %}
+    };
+    
+    const funcionario = funcionarios[funcionarioId];
+    if (funcionario) {
+        document.getElementById('modalUsername').textContent = funcionario.username;
+        document.getElementById('modalPassword').textContent = funcionario.password;
+        document.getElementById('modalUrl').textContent = window.location.origin + '/login/';
+        
+        const modal = new bootstrap.Modal(document.getElementById('loginModal'));
+        modal.show();
+    }
+}
+
+function copiarDados() {
+    const username = document.getElementById('modalUsername').textContent;
+    const password = document.getElementById('modalPassword').textContent;
+    const url = document.getElementById('modalUrl').textContent;
+    
+    const dados = `Dados de Acesso ao Sistema:\n\nUsuário: ${username}\nSenha: ${password}\nURL: ${url}`;
+    
+    navigator.clipboard.writeText(dados).then(function() {
+        alert('Dados copiados para a área de transferência!');
+    });
+}
+</script>
+{% endblock %}
+

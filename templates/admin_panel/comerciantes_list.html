@@ -1,0 +1,161 @@
+{% extends 'admin_panel/base_admin.html' %}
+
+{% block title %}Gerenciar Comerciantes{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-store me-2"></i>Gerenciar Comerciantes
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <a href="{% url 'admin_panel:comerciante_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus me-2"></i>Novo Comerciante
+        </a>
+    </div>
+</div>
+
+<!-- Filtros -->
+<div class="card mb-4">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-4">
+                <label for="search" class="form-label">Buscar</label>
+                <input type="text" class="form-control" id="search" name="search" 
+                       value="{{ search }}" placeholder="Nome do salão, usuário ou email">
+            </div>
+            <div class="col-md-3">
+                <label for="status" class="form-label">Status</label>
+                <select class="form-select" id="status" name="status">
+                    <option value="">Todos</option>
+                    <option value="ativo" {% if status == 'ativo' %}selected{% endif %}>Ativo</option>
+                    <option value="inativo" {% if status == 'inativo' %}selected{% endif %}>Inativo</option>
+                </select>
+            </div>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-outline-primary me-2">
+                    <i class="fas fa-search me-1"></i>Filtrar
+                </button>
+                <a href="{% url 'admin_panel:comerciantes_list' %}" class="btn btn-outline-secondary">
+                    <i class="fas fa-times me-1"></i>Limpar
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Lista de Comerciantes -->
+<div class="card">
+    <div class="card-body">
+        {% if page_obj %}
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead>
+                        <tr>
+                            <th>Salão</th>
+                            <th>Proprietário</th>
+                            <th>Email</th>
+                            <th>Telefone</th>
+                            <th>Agendamentos</th>
+                            <th>Status</th>
+                            <th>Data Criação</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for comerciante in page_obj %}
+                        <tr>
+                            <td>
+                                <strong>{{ comerciante.nome_salao }}</strong>
+                                {% if comerciante.cnpj %}
+                                    <br><small class="text-muted">CNPJ: {{ comerciante.cnpj }}</small>
+                                {% endif %}
+                            </td>
+                            <td>
+                                {{ comerciante.user.get_full_name|default:comerciante.user.username }}
+                                <br><small class="text-muted">@{{ comerciante.user.username }}</small>
+                            </td>
+                            <td>{{ comerciante.user.email }}</td>
+                            <td>{{ comerciante.telefone_comercial }}</td>
+                            <td>
+                                <span class="badge bg-info">{{ comerciante.total_agendamentos }}</span>
+                            </td>
+                            <td>
+                                {% if comerciante.ativo %}
+                                    <span class="badge bg-success">Ativo</span>
+                                {% else %}
+                                    <span class="badge bg-danger">Inativo</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ comerciante.data_criacao|date:"d/m/Y" }}</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <a href="{% url 'admin_panel:comerciante_edit' comerciante.pk %}" 
+                                       class="btn btn-sm btn-outline-primary" title="Editar">
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                    {% if comerciante.ativo %}
+                                    <a href="{% url 'admin_panel:comerciante_delete' comerciante.pk %}" 
+                                       class="btn btn-sm btn-outline-danger" title="Desativar">
+                                        <i class="fas fa-ban"></i>
+                                    </a>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginação -->
+            {% if page_obj.has_other_pages %}
+            <nav aria-label="Paginação">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page=1{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                                Primeira
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                                Anterior
+                            </a>
+                        </li>
+                    {% endif %}
+
+                    <li class="page-item active">
+                        <span class="page-link">
+                            Página {{ page_obj.number }} de {{ page_obj.paginator.num_pages }}
+                        </span>
+                    </li>
+
+                    {% if page_obj.has_next %}
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                                Próxima
+                            </a>
+                        </li>
+                        <li class="page-item">
+                            <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search %}&search={{ search }}{% endif %}{% if status %}&status={{ status }}{% endif %}">
+                                Última
+                            </a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </nav>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-store fa-3x text-muted mb-3"></i>
+                <h5 class="text-muted">Nenhum comerciante encontrado</h5>
+                <p class="text-muted">Comece criando o primeiro comerciante do sistema.</p>
+                <a href="{% url 'admin_panel:comerciante_create' %}" class="btn btn-primary">
+                    <i class="fas fa-plus me-2"></i>Criar Primeiro Comerciante
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
+

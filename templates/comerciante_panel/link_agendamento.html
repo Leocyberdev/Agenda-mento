@@ -1,0 +1,224 @@
+{% extends 'comerciante_panel/base_comerciante.html' %}
+
+{% block title %}Link de Agendamento - {{ comerciante.nome_salao }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-link me-2"></i>Link de Agendamento
+    </h1>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-share-alt me-2"></i>Link Público para Agendamentos
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <h6><i class="fas fa-info-circle me-2"></i>Como funciona:</h6>
+                    <p class="mb-0">Compartilhe este link com seus clientes para que eles possam agendar serviços diretamente pelo sistema, escolhendo o funcionário e horário disponível.</p>
+                </div>
+                
+                <div class="mb-4">
+                    <label class="form-label"><strong>URL de Agendamento:</strong></label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="agendamentoUrl" value="{{ agendamento_url }}" readonly>
+                        <button class="btn btn-outline-primary" type="button" onclick="copiarLink()">
+                            <i class="fas fa-copy me-1"></i>Copiar
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- QR Code -->
+                <div class="text-center mb-4">
+                    <h6>QR Code para Agendamento:</h6>
+                    <div id="qrcode" class="d-inline-block p-3 bg-white border rounded"></div>
+                    <br>
+                    <small class="text-muted">Clientes podem escanear este QR Code para acessar o agendamento</small>
+                </div>
+                
+                <!-- Botões de Compartilhamento -->
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <h6>Compartilhar via:</h6>
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-success" onclick="compartilharWhatsApp()">
+                                <i class="fab fa-whatsapp me-2"></i>WhatsApp
+                            </button>
+                            <button class="btn btn-primary" onclick="compartilharFacebook()">
+                                <i class="fab fa-facebook me-2"></i>Facebook
+                            </button>
+                            <button class="btn btn-info" onclick="compartilharTwitter()">
+                                <i class="fab fa-twitter me-2"></i>Twitter
+                            </button>
+                            <button class="btn btn-secondary" onclick="compartilharEmail()">
+                                <i class="fas fa-envelope me-2"></i>Email
+                            </button>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <h6>Código HTML para Site:</h6>
+                        <textarea class="form-control" rows="6" readonly id="codigoHtml">
+&lt;a href="{{ agendamento_url }}" target="_blank" class="btn btn-primary"&gt;
+    Agendar Serviço - {{ comerciante.nome_salao }}
+&lt;/a&gt;</textarea>
+                        <button class="btn btn-outline-secondary btn-sm mt-2" onclick="copiarHtml()">
+                            <i class="fas fa-copy me-1"></i>Copiar HTML
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-chart-bar me-2"></i>Estatísticas
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <small class="text-muted">Agendamentos este mês:</small>
+                    <h4 class="text-primary">{{ comerciante.agendamentos.count }}</h4>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Funcionários ativos:</small>
+                    <h4 class="text-success">{{ comerciante.funcionarios.filter.count }}</h4>
+                </div>
+                <div class="mb-3">
+                    <small class="text-muted">Serviços disponíveis:</small>
+                    <h4 class="text-info">{{ comerciante.servicos.filter.count }}</h4>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-lightbulb me-2"></i>Dicas de Marketing
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-success">
+                    <h6><i class="fas fa-bullhorn me-2"></i>Promova seu link:</h6>
+                    <ul class="mb-0">
+                        <li>Adicione o link na bio das redes sociais</li>
+                        <li>Imprima o QR Code em cartões de visita</li>
+                        <li>Compartilhe em grupos do WhatsApp</li>
+                        <li>Adicione no seu site ou blog</li>
+                        <li>Envie por email para clientes</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-cog me-2"></i>Configurações
+                </h6>
+            </div>
+            <div class="card-body">
+                <p class="text-muted">Para personalizar a página de agendamento ou alterar informações do salão, acesse as configurações do seu perfil.</p>
+                <a href="{% url 'accounts:profile' %}" class="btn btn-outline-primary btn-sm">
+                    <i class="fas fa-user-cog me-1"></i>Editar Perfil
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+#qrcode {
+    background: white;
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- QR Code Library -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+<script>
+// Gerar QR Code
+document.addEventListener('DOMContentLoaded', function() {
+    const url = document.getElementById('agendamentoUrl').value;
+    QRCode.toCanvas(document.getElementById('qrcode'), url, {
+        width: 200,
+        margin: 2,
+        color: {
+            dark: '#000000',
+            light: '#FFFFFF'
+        }
+    }, function (error) {
+        if (error) console.error(error);
+    });
+});
+
+function copiarLink() {
+    const url = document.getElementById('agendamentoUrl');
+    url.select();
+    url.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(url.value).then(function() {
+        // Feedback visual
+        const btn = event.target.closest('button');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check me-1"></i>Copiado!';
+        btn.classList.remove('btn-outline-primary');
+        btn.classList.add('btn-success');
+        
+        setTimeout(function() {
+            btn.innerHTML = originalText;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-primary');
+        }, 2000);
+    });
+}
+
+function copiarHtml() {
+    const html = document.getElementById('codigoHtml');
+    html.select();
+    html.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(html.value).then(function() {
+        alert('Código HTML copiado para a área de transferência!');
+    });
+}
+
+function compartilharWhatsApp() {
+    const url = document.getElementById('agendamentoUrl').value;
+    const texto = `Agende seu horário no {{ comerciante.nome_salao }}! Acesse: ${url}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(texto)}`;
+    window.open(whatsappUrl, '_blank');
+}
+
+function compartilharFacebook() {
+    const url = document.getElementById('agendamentoUrl').value;
+    const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(url)}`;
+    window.open(facebookUrl, '_blank');
+}
+
+function compartilharTwitter() {
+    const url = document.getElementById('agendamentoUrl').value;
+    const texto = `Agende seu horário no {{ comerciante.nome_salao }}!`;
+    const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(texto)}&url=${encodeURIComponent(url)}`;
+    window.open(twitterUrl, '_blank');
+}
+
+function compartilharEmail() {
+    const url = document.getElementById('agendamentoUrl').value;
+    const assunto = 'Agendamento - {{ comerciante.nome_salao }}';
+    const corpo = `Olá!\n\nVocê pode agendar seu horário no {{ comerciante.nome_salao }} através do link:\n\n${url}\n\nEscolha o serviço, funcionário e horário que preferir!\n\nAguardamos você!`;
+    const emailUrl = `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+    window.location.href = emailUrl;
+}
+</script>
+{% endblock %}
+

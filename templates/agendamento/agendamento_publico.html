@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendar Serviço - {{ comerciante.nome_salao }}</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <style>
+        :root {
+            --primary-color: #8B4513;
+            --secondary-color: #D2691E;
+            --accent-color: #F4A460;
+            --text-dark: #2c3e50;
+            --bg-light: #f8f9fa;
+        }
+        
+        body {
+            background: linear-gradient(135deg, var(--bg-light) 0%, #e9ecef 100%);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            min-height: 100vh;
+        }
+        
+        .header-section {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+        }
+        
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            transition: transform 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .step-indicator {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 2rem;
+        }
+        
+        .step {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: #e9ecef;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 10px;
+            position: relative;
+            color: #6c757d;
+            font-weight: bold;
+        }
+        
+        .step.active {
+            background: var(--primary-color);
+            color: white;
+        }
+        
+        .step.completed {
+            background: #28a745;
+            color: white;
+        }
+        
+        .step::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 100%;
+            width: 60px;
+            height: 2px;
+            background: #e9ecef;
+            transform: translateY(-50%);
+        }
+        
+        .step:last-child::after {
+            display: none;
+        }
+        
+        .step.completed::after {
+            background: #28a745;
+        }
+        
+        .btn-primary {
+            background: var(--primary-color);
+            border-color: var(--primary-color);
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary:hover {
+            background: var(--secondary-color);
+            border-color: var(--secondary-color);
+            transform: translateY(-2px);
+        }
+        
+        .service-card, .funcionario-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .service-card:hover, .funcionario-card:hover {
+            border-color: var(--primary-color);
+            transform: translateY(-3px);
+        }
+        
+        .service-card.selected, .funcionario-card.selected {
+            border-color: var(--primary-color);
+            background: rgba(139, 69, 19, 0.1);
+        }
+        
+        .horario-btn {
+            margin: 5px;
+            border-radius: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .horario-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 2rem;
+        }
+        
+        .spinner-border {
+            color: var(--primary-color);
+        }
+        
+        .alert {
+            border-radius: 10px;
+        }
+        
+        .form-control, .form-select {
+            border-radius: 10px;
+            border: 2px solid #e9ecef;
+            transition: border-color 0.3s ease;
+        }
+        
+        .form-control:focus, .form-select:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 0.2rem rgba(139, 69, 19, 0.25);
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <div class="header-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="mb-2">
+                        <i class="fas fa-cut me-3"></i>{{ comerciante.nome_salao }}
+                    </h1>
+                    <p class="mb-0 opacity-75">
+                        <i class="fas fa-map-marker-alt me-2"></i>{{ comerciante.endereco }}
+                    </p>
+                    <p class="mb-0 opacity-75">
+                        <i class="fas fa-phone me-2"></i>{{ comerciante.telefone_comercial }}
+                    </p>
+                </div>
+                <div class="col-md-4 text-md-end">
+                    <div class="bg-white bg-opacity-20 rounded p-3">
+                        <h6 class="mb-1">Horário de Funcionamento</h6>
+                        <small>{{ comerciante.horario_funcionamento }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <!-- Indicador de Passos -->
+        <div class="step-indicator">
+            <div class="step active" id="step1">1</div>
+            <div class="step" id="step2">2</div>
+            <div class="step" id="step3">3</div>
+            <div class="step" id="step4">4</div>
+            <div class="step" id="step5">5</div>
+        </div>
+
+        <!-- Alertas -->
+        <div id="alertContainer"></div>
+
+        <!-- Passo 1: Selecionar Serviço -->
+        <div class="card mb-4" id="servicoStep">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-scissors me-2"></i>Escolha o Serviço
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if servicos %}
+                    <div class="row">
+                        {% for servico in servicos %}
+                        <div class="col-md-6 col-lg-4 mb-3">
+                            <div class="card service-card h-100" data-servico-id="{{ servico.id }}">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-cut fa-2x text-primary mb-3"></i>
+                                    <h6 class="card-title">{{ servico.nome }}</h6>
+                                    <p class="card-text text-muted">{{ servico.descricao|truncatechars:60 }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-success">R$ {{ servico.preco }}</span>
+                                        <small class="text-muted">{{ servico.duracao_minutos }}min</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                        <h5>Nenhum serviço disponível</h5>
+                        <p class="text-muted">Este salão ainda não cadastrou serviços.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Passo 2: Selecionar Funcionário -->
+        <div class="card mb-4" id="funcionarioStep" style="display: none;">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-user me-2"></i>Escolha o Profissional
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="loading">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Carregando...</span>
+                    </div>
+                    <p class="mt-2">Carregando profissionais...</p>
+                </div>
+                <div id="funcionariosList" class="row"></div>
+            </div>
+        </div>
+
+        <!-- Passo 3: Selecionar Data -->
+        <div class="card mb-4" id="dataStep" style="display: none;">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-calendar me-2"></i>Escolha a Data
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="row justify-content-center">
+                    <div class="col-md-6">
+                        <input type="date" class="form-control" id="dataAgendamento" min="">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Passo 4: Selecionar Horário -->
+        <div class="card mb-4" id="horarioStep" style="display: none;">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-clock me-2"></i>Escolha o Horário
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="loading">
+                    <div class="spinner-border" role="status">
+                        <span class="visually-hidden">Carregando...</span>
+                    </div>
+                    <p class="mt-2">Carregando horários disponíveis...</p>
+                </div>
+                <div id="horariosList" class="text-center"></div>
+            </div>
+        </div>
+
+        <!-- Passo 5: Dados do Cliente -->
+        <div class="card mb-4" id="clienteStep" style="display: none;">
+            <div class="card-header bg-primary text-white">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-edit me-2"></i>Seus Dados
+                </h5>
+            </div>
+            <div class="card-body">
+                <form id="agendamentoForm">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="clienteNome" class="form-label">Nome Completo *</label>
+                            <input type="text" class="form-control" id="clienteNome" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="clienteTelefone" class="form-label">Telefone *</label>
+                            <input type="tel" class="form-control" id="clienteTelefone" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="clienteEmail" class="form-label">Email (opcional)</label>
+                        <input type="email" class="form-control" id="clienteEmail">
+                    </div>
+                    <div class="mb-3">
+                        <label for="observacoes" class="form-label">Observações (opcional)</label>
+                        <textarea class="form-control" id="observacoes" rows="3" 
+                                  placeholder="Alguma observação especial para o atendimento?"></textarea>
+                    </div>
+                    
+                    <!-- Resumo do Agendamento -->
+                    <div class="card bg-light">
+                        <div class="card-header">
+                            <h6 class="mb-0">Resumo do Agendamento</h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <p><strong>Serviço:</strong> <span id="resumoServico">-</span></p>
+                                    <p><strong>Profissional:</strong> <span id="resumoFuncionario">-</span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <p><strong>Data:</strong> <span id="resumoData">-</span></p>
+                                    <p><strong>Horário:</strong> <span id="resumoHorario">-</span></p>
+                                </div>
+                            </div>
+                            <div class="text-center">
+                                <h5 class="text-primary">Valor: R$ <span id="resumoValor">0,00</span></h5>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center mt-4">
+                        <button type="button" class="btn btn-secondary me-3" onclick="voltarPasso()">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar
+                        </button>
+                        <button type="submit" class="btn btn-primary btn-lg">
+                            <i class="fas fa-check me-2"></i>Confirmar Agendamento
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Variáveis globais
+        let agendamentoData = {
+            comerciante_id: {{ comerciante.id }},
+            servico_id: null,
+            funcionario_id: null,
+            data: null,
+            horario: null
+        };
+        
+        let currentStep = 1;
+        
+        // Inicialização
+        document.addEventListener('DOMContentLoaded', function() {
+            // Definir data mínima como hoje
+            const hoje = new Date().toISOString().split('T')[0];
+            document.getElementById('dataAgendamento').min = hoje;
+            
+            // Event listeners
+            setupEventListeners();
+        });
+        
+        function setupEventListeners() {
+            // Seleção de serviço
+            document.querySelectorAll('.service-card').forEach(card => {
+                card.addEventListener('click', function() {
+                    selectServico(this);
+                });
+            });
+            
+            // Seleção de data
+            document.getElementById('dataAgendamento').addEventListener('change', function() {
+                if (this.value) {
+                    agendamentoData.data = this.value;
+                    loadHorarios();
+                    nextStep();
+                }
+            });
+            
+            // Formulário de agendamento
+            document.getElementById('agendamentoForm').addEventListener('submit', function(e) {
+                e.preventDefault();
+                criarAgendamento();
+            });
+        }
+        
+        function selectServico(card) {
+            // Remover seleção anterior
+            document.querySelectorAll('.service-card').forEach(c => c.classList.remove('selected'));
+            
+            // Selecionar novo
+            card.classList.add('selected');
+            agendamentoData.servico_id = card.dataset.servicoId;
+            
+            // Atualizar resumo
+            const servicoNome = card.querySelector('.card-title').textContent;
+            const servicoPreco = card.querySelector('.badge').textContent;
+            document.getElementById('resumoServico').textContent = servicoNome;
+            document.getElementById('resumoValor').textContent = servicoPreco.replace('R$ ', '');
+            
+            // Carregar funcionários
+            loadFuncionarios();
+            nextStep();
+        }
+        
+        function selectFuncionario(card) {
+            // Remover seleção anterior
+            document.querySelectorAll('.funcionario-card').forEach(c => c.classList.remove('selected'));
+            
+            // Selecionar novo
+            card.classList.add('selected');
+            agendamentoData.funcionario_id = card.dataset.funcionarioId;
+            
+            // Atualizar resumo
+            const funcionarioNome = card.querySelector('.card-title').textContent;
+            document.getElementById('resumoFuncionario').textContent = funcionarioNome;
+            
+            nextStep();
+        }
+        
+        function selectHorario(btn) {
+            // Remover seleção anterior
+            document.querySelectorAll('.horario-btn').forEach(b => {
+                b.classList.remove('btn-primary');
+                b.classList.add('btn-outline-primary');
+            });
+            
+            // Selecionar novo
+            btn.classList.remove('btn-outline-primary');
+            btn.classList.add('btn-primary');
+            agendamentoData.horario = btn.textContent;
+            
+            // Atualizar resumo
+            document.getElementById('resumoHorario').textContent = btn.textContent;
+            document.getElementById('resumoData').textContent = formatDate(agendamentoData.data);
+            
+            nextStep();
+        }
+        
+        function loadFuncionarios() {
+            const container = document.getElementById('funcionariosList');
+            const loading = document.querySelector('#funcionarioStep .loading');
+            
+            loading.style.display = 'block';
+            container.innerHTML = '';
+            
+            fetch(`/agendamento/api/${agendamentoData.comerciante_id}/funcionarios/${agendamentoData.servico_id}/`)
+                .then(response => response.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    
+                    if (data.funcionarios && data.funcionarios.length > 0) {
+                        data.funcionarios.forEach(funcionario => {
+                            const card = createFuncionarioCard(funcionario);
+                            container.appendChild(card);
+                        });
+                    } else {
+                        container.innerHTML = '<div class="col-12 text-center"><p class="text-muted">Nenhum profissional disponível para este serviço.</p></div>';
+                    }
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    showAlert('Erro ao carregar profissionais. Tente novamente.', 'danger');
+                });
+        }
+        
+        function loadHorarios() {
+            const container = document.getElementById('horariosList');
+            const loading = document.querySelector('#horarioStep .loading');
+            
+            loading.style.display = 'block';
+            container.innerHTML = '';
+            
+            fetch(`/agendamento/api/${agendamentoData.comerciante_id}/horarios/${agendamentoData.funcionario_id}/?data=${agendamentoData.data}`)
+                .then(response => response.json())
+                .then(data => {
+                    loading.style.display = 'none';
+                    
+                    if (data.horarios && data.horarios.length > 0) {
+                        data.horarios.forEach(horario => {
+                            const btn = document.createElement('button');
+                            btn.className = 'btn btn-outline-primary horario-btn';
+                            btn.textContent = horario;
+                            btn.onclick = () => selectHorario(btn);
+                            container.appendChild(btn);
+                        });
+                    } else {
+                        container.innerHTML = '<p class="text-muted">Nenhum horário disponível para esta data.</p>';
+                    }
+                })
+                .catch(error => {
+                    loading.style.display = 'none';
+                    showAlert('Erro ao carregar horários. Tente novamente.', 'danger');
+                });
+        }
+        
+        function createFuncionarioCard(funcionario) {
+            const col = document.createElement('div');
+            col.className = 'col-md-6 col-lg-4 mb-3';
+            
+            col.innerHTML = `
+                <div class="card funcionario-card h-100" data-funcionario-id="${funcionario.id}">
+                    <div class="card-body text-center">
+                        <i class="fas fa-user-tie fa-2x text-primary mb-3"></i>
+                        <h6 class="card-title">${funcionario.nome}</h6>
+                        <p class="card-text text-muted">${funcionario.especialidades}</p>
+                    </div>
+                </div>
+            `;
+            
+            col.querySelector('.funcionario-card').addEventListener('click', function() {
+                selectFuncionario(this);
+            });
+            
+            return col;
+        }
+        
+        function criarAgendamento() {
+            const formData = {
+                ...agendamentoData,
+                cliente_nome: document.getElementById('clienteNome').value,
+                cliente_telefone: document.getElementById('clienteTelefone').value,
+                cliente_email: document.getElementById('clienteEmail').value,
+                observacoes: document.getElementById('observacoes').value
+            };
+            
+            fetch(`/agendamento/api/${agendamentoData.comerciante_id}/criar/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData)
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // Redirecionar para página de confirmação
+                    window.location.href = `/agendamento/confirmacao/?id=${data.agendamento_id}`;
+                } else {
+                    showAlert(data.error || 'Erro ao criar agendamento', 'danger');
+                }
+            })
+            .catch(error => {
+                showAlert('Erro interno. Tente novamente.', 'danger');
+            });
+        }
+        
+        function nextStep() {
+            if (currentStep < 5) {
+                // Ocultar passo atual
+                document.getElementById(getStepId(currentStep)).style.display = 'none';
+                
+                // Marcar como concluído
+                document.getElementById(`step${currentStep}`).classList.remove('active');
+                document.getElementById(`step${currentStep}`).classList.add('completed');
+                
+                // Próximo passo
+                currentStep++;
+                
+                // Mostrar próximo passo
+                document.getElementById(getStepId(currentStep)).style.display = 'block';
+                document.getElementById(`step${currentStep}`).classList.add('active');
+            }
+        }
+        
+        function voltarPasso() {
+            if (currentStep > 1) {
+                // Ocultar passo atual
+                document.getElementById(getStepId(currentStep)).style.display = 'none';
+                document.getElementById(`step${currentStep}`).classList.remove('active');
+                
+                // Passo anterior
+                currentStep--;
+                
+                // Mostrar passo anterior
+                document.getElementById(getStepId(currentStep)).style.display = 'block';
+                document.getElementById(`step${currentStep}`).classList.remove('completed');
+                document.getElementById(`step${currentStep}`).classList.add('active');
+            }
+        }
+        
+        function getStepId(step) {
+            const steps = ['', 'servicoStep', 'funcionarioStep', 'dataStep', 'horarioStep', 'clienteStep'];
+            return steps[step];
+        }
+        
+        function showAlert(message, type) {
+            const container = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type} alert-dismissible fade show`;
+            alert.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+            `;
+            container.appendChild(alert);
+            
+            // Auto-remover após 5 segundos
+            setTimeout(() => {
+                if (alert.parentNode) {
+                    alert.remove();
+                }
+            }, 5000);
+        }
+        
+        function formatDate(dateStr) {
+            const date = new Date(dateStr + 'T00:00:00');
+            return date.toLocaleDateString('pt-BR');
+        }
+    </script>
+</body>
+</html>
+

@@ -1,0 +1,274 @@
+{% extends 'comerciante_panel/base_comerciante.html' %}
+
+{% block title %}Dashboard - {{ comerciante.nome_salao }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">
+        <i class="fas fa-tachometer-alt me-2"></i>Dashboard - {{ comerciante.nome_salao }}
+    </h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <div class="btn-group me-2">
+            <button type="button" class="btn btn-sm btn-outline-secondary dropdown-toggle" data-bs-toggle="dropdown">
+                <i class="fas fa-calendar me-1"></i>Hoje
+            </button>
+            <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="#">Hoje</a></li>
+                <li><a class="dropdown-item" href="#">Esta Semana</a></li>
+                <li><a class="dropdown-item" href="#">Este Mês</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<!-- Cards de Estatísticas -->
+<div class="row mb-4">
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-primary shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Funcionários Ativos
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_funcionarios }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-users fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-success shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Serviços Ativos
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_servicos }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-cut fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-info shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Agendamentos Hoje
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ agendamentos_hoje }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-calendar-check fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card border-left-warning shadow h-100 py-2">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                            Total de Clientes
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_clientes }}</div>
+                    </div>
+                    <div class="col-auto">
+                        <i class="fas fa-user-friends fa-2x text-gray-300"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Próximos Agendamentos -->
+    <div class="col-lg-8 mb-4">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-clock me-2"></i>Próximos Agendamentos
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if proximos_agendamentos %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Data/Hora</th>
+                                    <th>Cliente</th>
+                                    <th>Serviço</th>
+                                    <th>Funcionário</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for agendamento in proximos_agendamentos %}
+                                <tr>
+                                    <td>
+                                        <small>
+                                            {{ agendamento.data_agendamento|date:"d/m/Y" }}<br>
+                                            {{ agendamento.data_agendamento|time:"H:i" }}
+                                        </small>
+                                    </td>
+                                    <td>{{ agendamento.cliente.nome }}</td>
+                                    <td>{{ agendamento.servico.nome }}</td>
+                                    <td>{{ agendamento.funcionario.user.get_full_name }}</td>
+                                    <td>
+                                        <span class="badge bg-{% if agendamento.status == 'confirmado' %}success{% elif agendamento.status == 'agendado' %}primary{% else %}secondary{% endif %}">
+                                            {{ agendamento.get_status_display }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="text-center">
+                        <a href="{% url 'comerciante_panel:agendamentos_list' %}" class="btn btn-primary btn-sm">
+                            Ver Todos os Agendamentos
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-calendar-times fa-3x text-muted mb-3"></i>
+                        <h6 class="text-muted">Nenhum agendamento próximo</h6>
+                        <p class="text-muted">Os próximos agendamentos aparecerão aqui.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Ações Rápidas -->
+    <div class="col-lg-4 mb-4">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-bolt me-2"></i>Ações Rápidas
+                </h6>
+            </div>
+            <div class="card-body">
+                {% if user.is_comerciante %}
+                <div class="d-grid gap-2">
+                    <a href="{% url 'comerciante_panel:funcionario_create' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-user-plus me-2"></i>Novo Funcionário
+                    </a>
+                    <a href="{% url 'comerciante_panel:servico_create' %}" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus me-2"></i>Novo Serviço
+                    </a>
+                    <a href="{% url 'comerciante_panel:link_agendamento' %}" class="btn btn-info btn-sm">
+                        <i class="fas fa-link me-2"></i>Link de Agendamento
+                    </a>
+                    <a href="{% url 'comerciante_panel:agendamentos_list' %}" class="btn btn-secondary btn-sm">
+                        <i class="fas fa-calendar-check me-2"></i>Ver Agendamentos
+                    </a>
+                </div>
+                {% else %}
+                <div class="d-grid gap-2">
+                    <a href="{% url 'comerciante_panel:agendamentos_list' %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-calendar-check me-2"></i>Meus Agendamentos
+                    </a>
+                    <a href="{% url 'comerciante_panel:funcionario_dashboard' %}" class="btn btn-info btn-sm">
+                        <i class="fas fa-user me-2"></i>Meu Perfil
+                    </a>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Informações do Salão -->
+        <div class="card shadow mt-4">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-store me-2"></i>Informações do Salão
+                </h6>
+            </div>
+            <div class="card-body">
+                <p><strong>{{ comerciante.nome_salao }}</strong></p>
+                <p class="text-muted mb-2">
+                    <i class="fas fa-map-marker-alt me-1"></i>
+                    {{ comerciante.endereco|truncatechars:50 }}
+                </p>
+                <p class="text-muted mb-2">
+                    <i class="fas fa-phone me-1"></i>
+                    {{ comerciante.telefone_comercial }}
+                </p>
+                <p class="text-muted mb-0">
+                    <i class="fas fa-clock me-1"></i>
+                    {{ comerciante.horario_funcionamento|truncatechars:30 }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Agendamentos Recentes -->
+{% if agendamentos_recentes %}
+<div class="row">
+    <div class="col-12">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold">
+                    <i class="fas fa-history me-2"></i>Agendamentos Recentes
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Data/Hora</th>
+                                <th>Cliente</th>
+                                <th>Serviço</th>
+                                <th>Funcionário</th>
+                                <th>Valor</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for agendamento in agendamentos_recentes %}
+                            <tr>
+                                <td>
+                                    {{ agendamento.data_agendamento|date:"d/m/Y H:i" }}
+                                </td>
+                                <td>
+                                    {{ agendamento.cliente.nome }}
+                                    <br><small class="text-muted">{{ agendamento.cliente.telefone }}</small>
+                                </td>
+                                <td>{{ agendamento.servico.nome }}</td>
+                                <td>{{ agendamento.funcionario.user.get_full_name }}</td>
+                                <td>R$ {{ agendamento.servico.preco }}</td>
+                                <td>
+                                    <span class="badge bg-{% if agendamento.status == 'concluido' %}success{% elif agendamento.status == 'cancelado' %}danger{% elif agendamento.status == 'confirmado' %}info{% else %}primary{% endif %}">
+                                        {{ agendamento.get_status_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+

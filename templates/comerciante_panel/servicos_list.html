@@ -1,0 +1,105 @@
+{% extends 'comerciante_panel/base_comerciante.html' %}
+
+{% block title %}Serviços - {{ comerciante.nome_salao }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <h1 class="h3 mb-4 text-gray-800">Serviços</h1>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="card shadow mb-4">
+        <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+            <h6 class="m-0 font-weight-bold text-primary">Gerenciar Serviços</h6>
+            <a href="{% url 'comerciante_panel:servico_create' %}" class="btn btn-primary btn-sm">
+                <i class="fas fa-plus"></i> Novo Serviço
+            </a>
+        </div>
+        <div class="card-body">
+            {% if page_obj %}
+            <div class="table-responsive">
+                <table class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                    <thead>
+                        <tr>
+                            <th>Serviço</th>
+                            <th>Preço</th>
+                            <th>Duração (min)</th>
+                            <th>Status</th>
+                            <th>Criação</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for servico in page_obj %}
+                        <tr>
+                            <td>
+                                <strong>{{ servico.nome }}</strong><br>
+                                <small class="text-muted">{{ servico.descricao|truncatechars:50 }}</small>
+                            </td>
+                            <td>R$ {{ servico.preco }}</td>
+                            <td>{{ servico.duracao_minutos }}</td>
+                            <td>
+                                {% if servico.ativo %}
+                                <span class="badge badge-success">Ativo</span>
+                                {% else %}
+                                <span class="badge badge-danger">Inativo</span>
+                                {% endif %}
+                            </td>
+                            <td>{{ servico.data_criacao|date:"d/m/Y" }}</td>
+                            <td>
+                                <a href="{% url 'comerciante_panel:servico_update' servico.id %}" class="btn btn-info btn-sm" title="Editar">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'comerciante_panel:servico_delete' servico.id %}" class="btn btn-danger btn-sm" title="Excluir">
+                                    <i class="fas fa-trash"></i>
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Paginação -->
+            <nav aria-label="Page navigation example">
+                <ul class="pagination justify-content-center">
+                    {% if page_obj.has_previous %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}">Anterior</a></li>
+                    {% endif %}
+
+                    {% for i in page_obj.paginator.page_range %}
+                    <li class="page-item {% if page_obj.number == i %}active{% endif %}">
+                        <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+                    </li>
+                    {% endfor %}
+
+                    {% if page_obj.has_next %}
+                    <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}">Próxima</a></li>
+                    {% endif %}
+                </ul>
+            </nav>
+
+            {% else %}
+            <div class="text-center py-5">
+                <i class="fas fa-box-open fa-3x text-warning mb-3"></i>
+                <h5>Nenhum serviço encontrado</h5>
+                <p class="text-muted">Comece criando o primeiro serviço do seu salão.</p>
+                <a href="{% url 'comerciante_panel:servico_create' %}" class="btn btn-primary mt-3">
+                    <i class="fas fa-plus"></i> Criar Primeiro Serviço
+                </a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
+

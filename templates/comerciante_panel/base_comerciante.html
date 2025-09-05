@@ -1,0 +1,67 @@
+{% extends 'base/base.html' %}
+
+{% block sidebar %}
+<nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
+    <div class="position-sticky pt-3">
+        <ul class="nav flex-column">
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+                   href="{% url 'comerciante_panel:dashboard' %}">
+                    <i class="fas fa-tachometer-alt me-2"></i>
+                    Dashboard
+                </a>
+            </li>
+            
+            {% if user.is_comerciante %}
+            <li class="nav-item">
+                <a class="nav-link {% if 'funcionarios' in request.resolver_match.url_name %}active{% endif %}" 
+                   href="{% url 'comerciante_panel:funcionarios_list' %}">
+                    <i class="fas fa-users me-2"></i>
+                    Funcionários
+                </a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link {% if 'servicos' in request.resolver_match.url_name %}active{% endif %}" 
+                   href="{% url 'comerciante_panel:servicos_list' %}">
+                    <i class="fas fa-cut me-2"></i>
+                    Serviços
+                </a>
+            </li>
+            {% endif %}
+            
+            <li class="nav-item">
+                <a class="nav-link {% if 'agendamentos' in request.resolver_match.url_name %}active{% endif %}" 
+                   href="{% url 'comerciante_panel:agendamentos_list' %}">
+                    <i class="fas fa-calendar-check me-2"></i>
+                    Agendamentos
+                </a>
+            </li>
+            
+            {% if user.is_comerciante %}
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'link_agendamento' %}active{% endif %}" 
+                   href="{% url 'comerciante_panel:link_agendamento' %}">
+                    <i class="fas fa-link me-2"></i>
+                    Link de Agendamento
+                </a>
+            </li>
+            {% endif %}
+        </ul>
+        
+        <hr class="my-3" style="border-color: var(--accent-color);">
+        
+        <div class="px-3">
+            <small class="text-light">
+                {% if user.is_comerciante %}
+                    <i class="fas fa-store me-1"></i>
+                    Painel do Comerciante
+                {% else %}
+                    <i class="fas fa-user me-1"></i>
+                    Painel do Funcionário
+                {% endif %}
+            </small>
+        </div>
+    </div>
+</nav>
+{% endblock %}
+
