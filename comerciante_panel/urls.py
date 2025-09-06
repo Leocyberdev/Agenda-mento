@@ -19,4 +19,9 @@ urlpatterns = [
 
     # Configurações
     path('configuracoes/', views.configuracoes, name='configuracoes'),
+    
+    # Calendário avançado
+    path('calendario/', views.calendario_view, name='calendario'),
+    path('agendamentos/json/', views.agendamentos_json, name='agendamentos_json'),
+    path('agendamentos/mover/', views.mover_agendamento, name='mover_agendamento'),
 ]

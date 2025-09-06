@@ -239,6 +239,21 @@
                             </button>
                         </div>
                     </div>
+                    
+                    <!-- Ações Rápidas -->
+                    <div class="mt-4">
+                        <h6 class="text-primary mb-3">
+                            <i class="fas fa-bolt me-2"></i>Ações Rápidas
+                        </h6>
+                        <div class="d-grid gap-2">
+                            <a href="{% url 'comerciante_panel:calendario' %}" class="btn btn-primary btn-sm">
+                                <i class="fas fa-calendar-alt me-2"></i>Ver Calendário
+                            </a>
+                            <a href="{% url 'comerciante_panel:agendamentos_list' %}" class="btn btn-secondary btn-sm">
+                                <i class="fas fa-list me-2"></i>Meus Agendamentos
+                            </a>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

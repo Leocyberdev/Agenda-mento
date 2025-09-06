@@ -1,0 +1,401 @@
+{% extends 'comerciante_panel/base_comerciante.html' %}
+{% load static %}
+
+{% block title %}Calendário - {{ comerciante.nome_salao }}{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-calendar-alt me-2"></i>Calendário de Agendamentos
+    </h1>
+    <div class="btn-group" role="group">
+        <a href="{% url 'comerciante_panel:agendamentos_list' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-list me-1"></i>Lista
+        </a>
+        <button type="button" class="btn btn-primary active">
+            <i class="fas fa-calendar-alt me-1"></i>Calendário
+        </button>
+    </div>
+</div>
+
+<!-- Legenda de Funcionários -->
+<div class="card shadow mb-4">
+    <div class="card-header">
+        <h6 class="m-0 font-weight-bold text-primary">
+            <i class="fas fa-users me-2"></i>Legenda de Funcionários
+        </h6>
+    </div>
+    <div class="card-body">
+        <div class="row" id="legenda-funcionarios">
+            {% for funcionario in funcionarios %}
+            <div class="col-md-6 col-lg-4 mb-2">
+                <div class="d-flex align-items-center">
+                    <div class="color-box funcionario-color" 
+                         data-funcionario-id="{{ funcionario.id }}" 
+                         style="width: 20px; height: 20px; border-radius: 3px; margin-right: 10px;"></div>
+                    <div>
+                        <strong>{{ funcionario.user.get_full_name }}</strong><br>
+                        <small class="text-muted">{{ funcionario.especialidades|truncatechars:40 }}</small>
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+<!-- Calendário -->
+<div class="card shadow">
+    <div class="card-body">
+        <div id="calendar"></div>
+    </div>
+</div>
+
+<!-- Modal de Detalhes do Agendamento -->
+<div class="modal fade" id="agendamentoModal" tabindex="-1" aria-labelledby="agendamentoModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="agendamentoModalLabel">Detalhes do Agendamento</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-user me-2"></i>Cliente</h6>
+                        <p id="modal-cliente" class="mb-3"></p>
+                        
+                        <h6><i class="fas fa-phone me-2"></i>Telefone</h6>
+                        <p id="modal-telefone" class="mb-3"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-cut me-2"></i>Serviço</h6>
+                        <p id="modal-servico" class="mb-3"></p>
+                        
+                        <h6><i class="fas fa-dollar-sign me-2"></i>Preço</h6>
+                        <p id="modal-preco" class="mb-3"></p>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-user-tie me-2"></i>Funcionário</h6>
+                        <p id="modal-funcionario" class="mb-3"></p>
+                    </div>
+                    <div class="col-md-6">
+                        <h6><i class="fas fa-info-circle me-2"></i>Status</h6>
+                        <p id="modal-status" class="mb-3"></p>
+                    </div>
+                </div>
+                
+                <div class="row">
+                    <div class="col-12">
+                        <h6><i class="fas fa-sticky-note me-2"></i>Observações</h6>
+                        <p id="modal-observacoes" class="mb-3"></p>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Fechar</button>
+                <a href="#" id="modal-editar-link" class="btn btn-primary">
+                    <i class="fas fa-edit me-1"></i>Editar
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Toast para feedback -->
+<div class="toast-container position-fixed bottom-0 end-0 p-3">
+    <div id="feedbackToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header">
+            <strong class="me-auto">Sistema</strong>
+            <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body" id="toastBody">
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_css %}
+<!-- FullCalendar CSS -->
+<link href="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.css" rel="stylesheet">
+
+<style>
+.fc-event {
+    border-radius: 3px;
+    font-size: 0.85em;
+    cursor: pointer;
+}
+
+.fc-event.agendamento.confirmado {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+.fc-event.agendamento.cancelado {
+    opacity: 0.6;
+    text-decoration: line-through;
+}
+
+.fc-event.agendamento.concluido {
+    border: 2px solid #28a745;
+    box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
+}
+
+.fc-toolbar-title {
+    color: #5a5c69;
+    font-weight: bold;
+}
+
+.fc-button-primary {
+    background-color: #4e73df;
+    border-color: #4e73df;
+}
+
+.fc-button-primary:hover {
+    background-color: #2e59d9;
+    border-color: #2e59d9;
+}
+
+.fc-daygrid-event {
+    margin: 1px;
+}
+
+.color-box.funcionario-color {
+    border: 1px solid #ddd;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.modal-body h6 {
+    color: #5a5c69;
+    margin-bottom: 5px;
+}
+
+.modal-body p {
+    color: #858796;
+}
+
+#calendar {
+    height: 600px;
+}
+
+@media (max-width: 768px) {
+    #calendar {
+        height: 500px;
+    }
+    
+    .fc-toolbar {
+        flex-direction: column;
+    }
+    
+    .fc-toolbar-chunk {
+        margin: 5px 0;
+    }
+}
+</style>
+{% endblock %}
+
+{% block extra_js %}
+<!-- FullCalendar JS -->
+<script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.8/index.global.min.js"></script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const coresFuncionarios = {{ cores_funcionarios|safe }};
+    const usuarioFuncionario = {{ usuario_funcionario|yesno:"true,false" }};
+    
+    // Configurar cores na legenda
+    Object.keys(coresFuncionarios).forEach(funcionarioId => {
+        const colorBox = document.querySelector(`[data-funcionario-id="${funcionarioId}"]`);
+        if (colorBox) {
+            colorBox.style.backgroundColor = coresFuncionarios[funcionarioId].color;
+        }
+    });
+    
+    // Inicializar FullCalendar
+    const calendarEl = document.getElementById('calendar');
+    const calendar = new FullCalendar.Calendar(calendarEl, {
+        initialView: 'dayGridMonth',
+        locale: 'pt-br',
+        headerToolbar: {
+            left: 'prev,next today',
+            center: 'title',
+            right: 'dayGridMonth,timeGridWeek,timeGridDay'
+        },
+        height: 'auto',
+        events: '{% url "comerciante_panel:agendamentos_json" %}',
+        eventDisplay: 'block',
+        dayMaxEvents: 3,
+        eventDidMount: function(info) {
+            // Adicionar tooltip
+            info.el.setAttribute('title', 
+                `${info.event.extendedProps.cliente} - ${info.event.extendedProps.servico}\n` +
+                `Funcionário: ${info.event.extendedProps.funcionario}\n` +
+                `Status: ${info.event.extendedProps.status_display}`
+            );
+        },
+        eventClick: function(info) {
+            mostrarDetalhesAgendamento(info.event);
+        },
+        editable: {{ user.is_comerciante|yesno:"true,false" }},
+        eventDrop: function(info) {
+            moverAgendamento(info.event, info);
+        },
+        eventResize: function(info) {
+            // Por enquanto, não permitir redimensionamento
+            info.revert();
+            mostrarToast('Redimensionamento não permitido. Use o formulário de edição para alterar a duração.', 'warning');
+        },
+        loading: function(isLoading) {
+            if (isLoading) {
+                document.body.style.cursor = 'wait';
+            } else {
+                document.body.style.cursor = 'default';
+            }
+        }
+    });
+    
+    calendar.render();
+    
+    function mostrarDetalhesAgendamento(event) {
+        const props = event.extendedProps;
+        
+        document.getElementById('modal-cliente').textContent = props.cliente;
+        document.getElementById('modal-telefone').textContent = props.telefone;
+        document.getElementById('modal-servico').textContent = props.servico;
+        document.getElementById('modal-preco').textContent = `R$ ${props.preco}`;
+        document.getElementById('modal-funcionario').textContent = props.funcionario;
+        document.getElementById('modal-observacoes').textContent = props.observacoes || 'Nenhuma observação';
+        
+        // Status com badge
+        const statusElement = document.getElementById('modal-status');
+        let statusClass = 'badge ';
+        switch(props.status) {
+            case 'confirmado':
+                statusClass += 'bg-success';
+                break;
+            case 'cancelado':
+                statusClass += 'bg-danger';
+                break;
+            case 'concluido':
+                statusClass += 'bg-primary';
+                break;
+            case 'agendado':
+                statusClass += 'bg-info';
+                break;
+            default:
+                statusClass += 'bg-secondary';
+        }
+        
+        statusElement.innerHTML = `<span class="${statusClass}">${props.status_display}</span>`;
+        
+        // Link de edição - só mostrar se tiver permissão
+        const editarLink = document.getElementById('modal-editar-link');
+        {% if user.is_comerciante %}
+            editarLink.href = `{% url 'comerciante_panel:agendamento_edit' 0 %}`.replace('0', event.id);
+            editarLink.style.display = 'inline-block';
+        {% else %}
+            // Funcionário só pode editar seus próprios agendamentos
+            if (props.funcionario_id == {{ user.funcionario.id|default:"null" }}) {
+                editarLink.href = `{% url 'comerciante_panel:agendamento_edit' 0 %}`.replace('0', event.id);
+                editarLink.style.display = 'inline-block';
+            } else {
+                editarLink.style.display = 'none';
+            }
+        {% endif %}
+        
+        // Telefone só mostrar se tiver permissão (comerciante ou funcionário responsável)
+        const telefoneElement = document.getElementById('modal-telefone');
+        {% if user.is_comerciante %}
+            telefoneElement.textContent = props.telefone;
+        {% else %}
+            if (props.funcionario_id == {{ user.funcionario.id|default:"null" }}) {
+                telefoneElement.textContent = props.telefone;
+            } else {
+                telefoneElement.textContent = 'Acesso restrito';
+            }
+        {% endif %}
+        
+        // Mostrar modal
+        const modal = new bootstrap.Modal(document.getElementById('agendamentoModal'));
+        modal.show();
+    }
+    
+    function moverAgendamento(event, info) {
+        fetch('{% url "comerciante_panel:mover_agendamento" %}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRFToken': getCookie('csrftoken')
+            },
+            body: JSON.stringify({
+                id: event.id,
+                start: event.start.toISOString()
+            })
+        })
+        .then(response => {
+            if (!response.ok) {
+                return response.json().then(err => Promise.reject(err));
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.success) {
+                mostrarToast(data.message, 'success');
+                // Atualizar horário de fim se necessário
+                if (data.end) {
+                    event.setEnd(new Date(data.end));
+                }
+            } else {
+                mostrarToast(data.error || 'Erro ao mover agendamento', 'error');
+                info.revert();
+            }
+        })
+        .catch(error => {
+            console.error('Erro ao mover agendamento:', error);
+            // Mostrar mensagem específica se disponível
+            const message = error.error || 'Erro ao mover agendamento';
+            mostrarToast(message, 'error');
+            info.revert();
+        });
+    }
+    
+    function mostrarToast(message, type) {
+        const toastElement = document.getElementById('feedbackToast');
+        const toastBody = document.getElementById('toastBody');
+        
+        toastBody.textContent = message;
+        
+        // Remover classes anteriores e adicionar nova
+        toastElement.className = 'toast';
+        if (type === 'success') {
+            toastElement.classList.add('bg-success', 'text-white');
+        } else if (type === 'error') {
+            toastElement.classList.add('bg-danger', 'text-white');
+        } else if (type === 'warning') {
+            toastElement.classList.add('bg-warning', 'text-dark');
+        }
+        
+        const toast = new bootstrap.Toast(toastElement);
+        toast.show();
+    }
+    
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+});
+</script>
+{% endblock %}

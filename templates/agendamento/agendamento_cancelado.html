@@ -1,0 +1,59 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendamento Cancelado</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .cancel-icon {
+            width: 100px;
+            height: 100px;
+            background: #dc3545;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="card text-center">
+                    <div class="card-body p-5">
+                        <div class="cancel-icon">
+                            <i class="fas fa-times fa-3x text-white"></i>
+                        </div>
+                        
+                        <h2 class="text-danger mb-3">Agendamento Cancelado</h2>
+                        <p class="lead mb-4">Seu agendamento foi cancelado com sucesso.</p>
+                        
+                        <div class="alert alert-warning">
+                            O horário agora está disponível para outros clientes.
+                        </div>
+                        
+                        <p class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Você pode fazer um novo agendamento a qualquer momento.
+                        </p>
+                        
+                        <a href="/agendamento/{{ agendamento.comerciante.id }}/" class="btn btn-primary">
+                            <i class="fas fa-calendar-plus me-2"></i>Fazer Novo Agendamento
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -10,6 +10,8 @@ from django.utils import timezone # Import timezone
 from accounts.models import User
 from agendamento.models import Comerciante, Funcionario, Servico, Agendamento, Cliente
 from datetime import datetime, timedelta
+import json
+import hashlib
 
 def is_comerciante_or_funcionario(user):
     return user.is_authenticated and (user.is_comerciante() or user.is_funcionario())
@@ -498,3 +500,190 @@ def configuracoes(request):
     return render(request, 'comerciante_panel/configuracoes.html', {
         'comerciante': comerciante
     })
+
+@login_required
+@user_passes_test(is_comerciante_or_funcionario)
+def calendario_view(request):
+    """View para exibir o calendário avançado"""
+    comerciante = get_comerciante_from_user(request.user)
+    
+    # Buscar funcionários e suas especialidades para gerar cores
+    funcionarios = comerciante.funcionarios.filter(ativo=True)
+    cores_funcionarios = {}
+    
+    def gerar_cor_deterministica(funcionario_id):
+        """Gera cor determinística e com bom contraste para funcionário"""
+        # Usar hash mais robusto para cores consistentes
+        hash_value = hash(str(funcionario_id))
+        hue = (hash_value % 360)  # 0-359 graus no círculo de cores
+        # Usar saturação alta e luminosidade média para boa visibilidade
+        saturation = 70  # 70%
+        lightness = 45   # 45%
+        return f"hsl({hue}, {saturation}%, {lightness}%)"
+    
+    for funcionario in funcionarios:
+        color = gerar_cor_deterministica(funcionario.id)
+        cores_funcionarios[funcionario.id] = {
+            'color': color,
+            'nome': funcionario.user.get_full_name(),
+            'especialidades': funcionario.especialidades
+        }
+    
+    context = {
+        'comerciante': comerciante,
+        'funcionarios': funcionarios,
+        'cores_funcionarios': json.dumps(cores_funcionarios),
+        'usuario_funcionario': request.user.is_funcionario()
+    }
+    
+    return render(request, 'comerciante_panel/calendario.html', context)
+
+@login_required
+@user_passes_test(is_comerciante_or_funcionario)
+def agendamentos_json(request):
+    """API para retornar agendamentos em formato JSON para o calendário"""
+    comerciante = get_comerciante_from_user(request.user)
+    
+    # Filtros de data do FullCalendar
+    start = request.GET.get('start')
+    end = request.GET.get('end')
+    
+    agendamentos = Agendamento.objects.filter(comerciante=comerciante).select_related(
+        'cliente', 'funcionario__user', 'servico'
+    )
+    
+    # Se for funcionário, mostrar apenas seus agendamentos
+    if request.user.is_funcionario():
+        agendamentos = agendamentos.filter(funcionario=request.user.funcionario)
+    
+    # Filtro por data se fornecido (importante para performance)
+    if start:
+        try:
+            start_date = datetime.fromisoformat(start.replace('Z', '+00:00'))
+            agendamentos = agendamentos.filter(data_agendamento__gte=start_date)
+        except ValueError:
+            pass  # Ignorar data inválida
+    if end:
+        try:
+            end_date = datetime.fromisoformat(end.replace('Z', '+00:00'))
+            agendamentos = agendamentos.filter(data_agendamento__lte=end_date)
+        except ValueError:
+            pass  # Ignorar data inválida
+    
+    # Converter para formato FullCalendar
+    events = []
+    for agendamento in agendamentos:
+        # Gerar cor baseada no funcionário usando a mesma função
+        hash_value = hash(str(agendamento.funcionario.id))
+        hue = (hash_value % 360)
+        saturation = 70
+        lightness = 45
+        color = f"hsl({hue}, {saturation}%, {lightness}%)"
+        
+        # Status do agendamento define o estilo
+        class_names = ['agendamento']
+        if agendamento.status == 'confirmado':
+            class_names.append('confirmado')
+        elif agendamento.status == 'cancelado':
+            class_names.append('cancelado')
+        elif agendamento.status == 'concluido':
+            class_names.append('concluido')
+        
+        event = {
+            'id': agendamento.id,
+            'title': f"{agendamento.cliente.nome} - {agendamento.servico.nome}",
+            'start': agendamento.data_agendamento.isoformat(),
+            'end': agendamento.get_data_fim().isoformat(),
+            'backgroundColor': color,
+            'borderColor': color,
+            'extendedProps': {
+                'cliente': agendamento.cliente.nome,
+                'servico': agendamento.servico.nome,
+                'funcionario': agendamento.funcionario.user.get_full_name(),
+                'funcionario_id': agendamento.funcionario.id,
+                'preco': str(agendamento.servico.preco),
+                'status': agendamento.status,
+                'status_display': agendamento.get_status_display(),
+                'telefone': agendamento.cliente.telefone,
+                'observacoes': agendamento.observacoes or ''
+            },
+            'classNames': class_names
+        }
+        events.append(event)
+    
+    return JsonResponse(events, safe=False)
+
+@login_required
+@user_passes_test(is_comerciante_or_funcionario)
+def mover_agendamento(request):
+    """API para mover agendamento via drag & drop"""
+    if request.method != 'POST':
+        return JsonResponse({'error': 'Método não permitido', 'code': 'METHOD_NOT_ALLOWED'}, status=405)
+    
+    try:
+        data = json.loads(request.body)
+        agendamento_id = data.get('id')
+        nova_data = data.get('start')
+        
+        if not agendamento_id or not nova_data:
+            return JsonResponse({'error': 'Dados incompletos', 'code': 'MISSING_DATA'}, status=400)
+        
+        comerciante = get_comerciante_from_user(request.user)
+        agendamento = get_object_or_404(Agendamento, 
+                                      id=agendamento_id, 
+                                      comerciante=comerciante)
+        
+        # Se for funcionário, só pode mover seus próprios agendamentos
+        if request.user.is_funcionario() and agendamento.funcionario != request.user.funcionario:
+            return JsonResponse({'error': 'Sem permissão para mover agendamentos de outros funcionários', 'code': 'PERMISSION_DENIED'}, status=403)
+        
+        # Converter e validar nova data
+        try:
+            nova_data_obj = datetime.fromisoformat(nova_data.replace('Z', '+00:00'))
+            # Garantir que é timezone-aware
+            if timezone.is_naive(nova_data_obj):
+                nova_data_obj = timezone.make_aware(nova_data_obj)
+        except ValueError:
+            return JsonResponse({'error': 'Data inválida', 'code': 'INVALID_DATE'}, status=400)
+        
+        # Calcular nova data de fim
+        nova_data_fim = nova_data_obj + timedelta(minutes=agendamento.servico.duracao_minutos)
+        
+        # Verificar conflitos com outros agendamentos do mesmo funcionário
+        conflitos = Agendamento.objects.filter(
+            funcionario=agendamento.funcionario,
+            comerciante=comerciante,
+            status__in=['agendado', 'confirmado', 'em_andamento']
+        ).exclude(id=agendamento.id).filter(
+            Q(data_agendamento__lt=nova_data_fim) & 
+            Q(data_agendamento__gte=nova_data_obj) |
+            Q(data_agendamento__lt=nova_data_obj) & 
+            Q(data_agendamento__gt=nova_data_obj)
+        )
+        
+        if conflitos.exists():
+            conflito = conflitos.first()
+            return JsonResponse({
+                'error': f'Conflito de horário com agendamento de {conflito.cliente.nome} às {conflito.data_agendamento.strftime("%H:%M")}', 
+                'code': 'TIME_CONFLICT'
+            }, status=400)
+        
+        # Usar transação para garantir consistência
+        with transaction.atomic():
+            agendamento.data_agendamento = nova_data_obj
+            agendamento.save()
+        
+        return JsonResponse({
+            'success': True,
+            'message': 'Agendamento movido com sucesso',
+            'end': nova_data_fim.isoformat()
+        })
+        
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'JSON inválido', 'code': 'INVALID_JSON'}, status=400)
+    except Exception as e:
+        # Log do erro para debugging (sem expor detalhes ao cliente)
+        import logging
+        logger = logging.getLogger(__name__)
+        logger.error(f"Erro ao mover agendamento: {str(e)}")
+        return JsonResponse({'error': 'Erro interno do servidor', 'code': 'INTERNAL_ERROR'}, status=500)

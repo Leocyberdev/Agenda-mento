@@ -1,0 +1,63 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agendamento Confirmado</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .success-icon {
+            width: 100px;
+            height: 100px;
+            background: #28a745;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-6">
+                <div class="card text-center">
+                    <div class="card-body p-5">
+                        <div class="success-icon">
+                            <i class="fas fa-check fa-3x text-white"></i>
+                        </div>
+                        
+                        <h2 class="text-success mb-3">Presença Confirmada!</h2>
+                        <p class="lead mb-4">Seu agendamento foi confirmado com sucesso.</p>
+                        
+                        <div class="alert alert-info">
+                            <strong><i class="fas fa-calendar me-2"></i>{{ agendamento.data_agendamento|date:"d/m/Y" }}</strong><br>
+                            <strong><i class="fas fa-clock me-2"></i>{{ agendamento.data_agendamento|time:"H:i" }}</strong><br>
+                            <strong><i class="fas fa-store me-2"></i>{{ agendamento.comerciante.nome_salao }}</strong>
+                        </div>
+                        
+                        <p class="text-muted">
+                            <i class="fas fa-info-circle me-1"></i>
+                            Aguardamos você no horário marcado. Obrigado!
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

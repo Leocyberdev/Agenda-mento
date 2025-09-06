@@ -302,6 +302,23 @@ class Agendamento(models.Model):
         verbose_name='Data de Atualização'
     )
 
+    token_confirmacao = models.CharField(
+        max_length=100,
+        blank=True,
+        null=True,
+        verbose_name='Token de Confirmação'
+    )
+
+    lembrete_enviado = models.BooleanField(
+        default=False,
+        verbose_name='Lembrete Enviado'
+    )
+
+    confirmado_pelo_cliente = models.BooleanField(
+        default=False,
+        verbose_name='Confirmado pelo Cliente'
+    )
+
     class Meta:
         verbose_name = 'Agendamento'
         verbose_name_plural = 'Agendamentos'

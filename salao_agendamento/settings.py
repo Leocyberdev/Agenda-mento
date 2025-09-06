@@ -35,6 +35,7 @@ CSRF_TRUSTED_ORIGINS = [
     'http://127.0.0.1:8000',
     'https://*.replit.dev',
     'https://7d5a1075-2847-4d5c-9a9d-dc9170acf1ec-00-kwdx5bbbnvz3.kirk.replit.dev',
+    'https://8000-i9ubmri70o8fuw82kzqvf-ff275c90.manus.computer',
 ]
 
 # CSRF settings optimized for Replit development environment
@@ -74,6 +75,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
+    'channels',
+    'django_celery_beat',
     'accounts',
     'admin_panel',
     'comerciante_panel',
@@ -194,6 +197,8 @@ AUTH_USER_MODEL = 'accounts.User'
 
 # Email settings
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+DEFAULT_FROM_EMAIL = 'noreply@seudominio.com'
+
 # Para produção, usar:
 # EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 # EMAIL_HOST = 'smtp.gmail.com'
@@ -201,6 +206,30 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 # EMAIL_USE_TLS = True
 # EMAIL_HOST_USER = 'seu_email@gmail.com'
 # EMAIL_HOST_PASSWORD = 'sua_senha'
+
+# Configurações removidas: Twilio/WhatsApp não será mais usado
+
+# URL base do site
+BASE_URL = os.environ.get('BASE_URL', 'http://localhost:5000')
+
+# Configurações do Celery - desabilitado para desenvolvimento
+CELERY_TASK_ALWAYS_EAGER = True  # Executa tasks de forma síncrona
+CELERY_TASK_EAGER_PROPAGATES = True
+CELERY_BROKER_URL = 'memory://'
+CELERY_RESULT_BACKEND = 'cache+memory://'
+CELERY_ACCEPT_CONTENT = ['json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'America/Sao_Paulo'
+
+# Configurações do Django Channels - usando InMemoryChannelLayer
+ASGI_APPLICATION = 'salao_agendamento.routing.application'
+
+CHANNEL_LAYERS = {
+    'default': {
+        'BACKEND': 'channels.layers.InMemoryChannelLayer',
+    },
+}
 
 # Login URLs
 LOGIN_URL = '/login/'

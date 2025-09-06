@@ -1,52 +1,60 @@
 {% extends 'base/base.html' %}
+{% load static %}
 
 {% block sidebar %}
 <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block sidebar collapse">
     <div class="position-sticky pt-3">
         <ul class="nav flex-column">
             <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}" 
+                <a class="nav-link {% if request.resolver_match.url_name == 'dashboard' %}active{% endif %}"
                    href="{% url 'comerciante_panel:dashboard' %}">
                     <i class="fas fa-tachometer-alt me-2"></i>
                     Dashboard
                 </a>
             </li>
-            
+
             {% if user.is_comerciante %}
             <li class="nav-item">
-                <a class="nav-link {% if 'funcionarios' in request.resolver_match.url_name %}active{% endif %}" 
+                <a class="nav-link {% if 'funcionarios' in request.resolver_match.url_name %}active{% endif %}"
                    href="{% url 'comerciante_panel:funcionarios_list' %}">
                     <i class="fas fa-users me-2"></i>
                     Funcionários
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {% if 'servicos' in request.resolver_match.url_name %}active{% endif %}" 
+                <a class="nav-link {% if 'servicos' in request.resolver_match.url_name %}active{% endif %}"
                    href="{% url 'comerciante_panel:servicos_list' %}">
                     <i class="fas fa-cut me-2"></i>
                     Serviços
                 </a>
             </li>
             {% endif %}
-            
+
             <li class="nav-item">
-                <a class="nav-link {% if 'agendamentos' in request.resolver_match.url_name %}active{% endif %}" 
+                <a class="nav-link {% if 'agendamentos_list' in request.resolver_match.url_name %}active{% endif %}"
                    href="{% url 'comerciante_panel:agendamentos_list' %}">
-                    <i class="fas fa-calendar-check me-2"></i>
-                    Agendamentos
+                    <i class="fas fa-list me-2"></i>
+                    Lista de Agendamentos
                 </a>
             </li>
-            
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'calendario' %}active{% endif %}"
+                   href="{% url 'comerciante_panel:calendario' %}">
+                    <i class="fas fa-calendar-alt me-2"></i>
+                    Calendário
+                </a>
+            </li>
+
             {% if user.is_comerciante %}
             <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'link_agendamento' %}active{% endif %}" 
+                <a class="nav-link {% if request.resolver_match.url_name == 'link_agendamento' %}active{% endif %}"
                    href="{% url 'comerciante_panel:link_agendamento' %}">
                     <i class="fas fa-link me-2"></i>
                     Link de Agendamento
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {% if request.resolver_match.url_name == 'configuracoes' %}active{% endif %}" 
+                <a class="nav-link {% if request.resolver_match.url_name == 'configuracoes' %}active{% endif %}"
                    href="{% url 'comerciante_panel:configuracoes' %}">
                     <i class="fas fa-cog me-2"></i>
                     Configurações
@@ -54,9 +62,9 @@
             </li>
             {% endif %}
         </ul>
-        
+
         <hr class="my-3" style="border-color: var(--accent-color);">
-        
+
         <div class="px-3">
             <small class="text-light">
                 {% if user.is_comerciante %}
@@ -72,3 +80,26 @@
 </nav>
 {% endblock %}
 
+{% block content %}
+{% endblock %}
+
+{% block scripts %}
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Notificações em Tempo Real -->
+    <script src="{% static 'js/notifications.js' %}"></script>
+
+    <!-- Container para Toasts -->
+    <div id="toast-container" class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;"></div>
+
+    <!-- Status da Conexão WebSocket -->
+    <div class="position-fixed bottom-0 end-0 p-3" style="z-index: 1000;">
+        <small id="ws-status" class="text-muted">
+            <i class="fas fa-circle text-secondary"></i> Conectando...
+        </small>
+        <button id="reconnect-btn" class="btn btn-sm btn-outline-primary ms-2" style="display: none;">
+            Reconectar
+        </button>
+    </div>
+{% endblock %}

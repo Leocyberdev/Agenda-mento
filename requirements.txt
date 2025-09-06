@@ -2,3 +2,14 @@ Django==5.2.6
 djangorestframework
 django-cors-headers
 Pillow
+Django==5.2.6
+django-cors-headers
+djangorestframework
+Pillow
+gunicorn
+celery
+channels
+channels-redis
+django-celery-beat
+redis
+twilio

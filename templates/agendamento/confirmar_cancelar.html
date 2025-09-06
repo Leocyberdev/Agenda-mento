@@ -1,0 +1,124 @@
+
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% if acao == 'confirmar' %}Confirmar{% else %}Cancelar{% endif %} Agendamento</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .hero-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 60px 0;
+        }
+        .card {
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        .info-item {
+            padding: 15px;
+            margin-bottom: 10px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+    </style>
+</head>
+<body>
+    <div class="hero-section">
+        <div class="container text-center">
+            <h1>
+                {% if acao == 'confirmar' %}
+                    <i class="fas fa-check-circle me-3"></i>Confirmar Agendamento
+                {% else %}
+                    <i class="fas fa-times-circle me-3"></i>Cancelar Agendamento
+                {% endif %}
+            </h1>
+            <p class="lead">{{ agendamento.comerciante.nome_salao }}</p>
+        </div>
+    </div>
+
+    <div class="container my-5">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="card">
+                    <div class="card-body p-4">
+                        <h3 class="card-title mb-4">
+                            {% if acao == 'confirmar' %}
+                                Confirme sua presença
+                            {% else %}
+                                Cancelamento do agendamento
+                            {% endif %}
+                        </h3>
+                        
+                        <!-- Detalhes do Agendamento -->
+                        <div class="info-item">
+                            <strong><i class="fas fa-user me-2"></i>Cliente:</strong> {{ agendamento.cliente.nome }}
+                        </div>
+                        
+                        <div class="info-item">
+                            <strong><i class="fas fa-scissors me-2"></i>Serviço:</strong> {{ agendamento.servico.nome }}
+                        </div>
+                        
+                        <div class="info-item">
+                            <strong><i class="fas fa-user-tie me-2"></i>Profissional:</strong> {{ agendamento.funcionario.user.get_full_name }}
+                        </div>
+                        
+                        <div class="info-item">
+                            <strong><i class="fas fa-calendar me-2"></i>Data:</strong> {{ agendamento.data_agendamento|date:"d/m/Y" }}
+                        </div>
+                        
+                        <div class="info-item">
+                            <strong><i class="fas fa-clock me-2"></i>Horário:</strong> {{ agendamento.data_agendamento|time:"H:i" }}
+                        </div>
+                        
+                        <div class="info-item">
+                            <strong><i class="fas fa-dollar-sign me-2"></i>Valor:</strong> R$ {{ agendamento.servico.preco }}
+                        </div>
+
+                        <!-- Formulário -->
+                        <form method="post" class="mt-4">
+                            {% csrf_token %}
+                            
+                            {% if acao == 'cancelar' %}
+                                <div class="mb-3">
+                                    <label for="motivo" class="form-label">Motivo do cancelamento (opcional):</label>
+                                    <textarea class="form-control" id="motivo" name="motivo" rows="3" placeholder="Ex: Problema pessoal, reagendamento necessário..."></textarea>
+                                </div>
+                            {% endif %}
+                            
+                            <div class="text-center">
+                                {% if acao == 'confirmar' %}
+                                    <button type="submit" class="btn btn-success btn-lg px-5">
+                                        <i class="fas fa-check me-2"></i>Confirmar Presença
+                                    </button>
+                                {% else %}
+                                    <button type="submit" class="btn btn-danger btn-lg px-5">
+                                        <i class="fas fa-times me-2"></i>Confirmar Cancelamento
+                                    </button>
+                                {% endif %}
+                            </div>
+                        </form>
+                        
+                        <div class="text-center mt-4">
+                            <small class="text-muted">
+                                <i class="fas fa-info-circle me-1"></i>
+                                {% if acao == 'confirmar' %}
+                                    Ao confirmar, você garante sua presença no horário agendado.
+                                {% else %}
+                                    O cancelamento será imediato e o horário ficará disponível para outros clientes.
+                                {% endif %}
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

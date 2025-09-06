@@ -1,0 +1,29 @@
+
+LEMBRETE DE AGENDAMENTO
+
+Olá {{ agendamento.cliente.nome }},
+
+🚨 Seu agendamento é em {{ horas_restantes }} horas!
+
+DETALHES DO AGENDAMENTO
+======================
+Estabelecimento: {{ agendamento.comerciante.nome_salao }}
+Serviço: {{ agendamento.servico.nome }}
+Profissional: {{ agendamento.funcionario.user.get_full_name }}
+Data: {{ agendamento.data_agendamento|date:"d/m/Y" }}
+Horário: {{ agendamento.data_agendamento|time:"H:i" }}
+Valor: R$ {{ agendamento.servico.preco }}
+
+AÇÕES DISPONÍVEIS
+=================
+Para confirmar sua presença: {{ confirm_url }}
+Para cancelar o agendamento: {{ cancel_url }}
+
+ENDEREÇO
+========
+{{ agendamento.comerciante.endereco }}
+
+Te esperamos!
+
+---
+Esta é uma mensagem automática, não responda este email.
