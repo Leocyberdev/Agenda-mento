@@ -1,4 +1,3 @@
-
 {% extends 'comerciante_panel/base_comerciante.html' %}
 {% load static %}
 
@@ -19,7 +18,7 @@
                             </h4>
                             <p class="mb-0">
                                 <i class="fas fa-store me-1"></i>
-                                {{ comerciante.nome_salao }}
+                                {{ comerciante.nome_estabelecimento }}
                             </p>
                         </div>
                         <div class="col-md-4 text-end">
@@ -56,7 +55,7 @@
                 </div>
             </div>
         </div>
-        
+
         <div class="col-md-6">
             <div class="card border-left-success">
                 <div class="card-body">
@@ -220,14 +219,14 @@
                 </div>
                 <div class="card-body">
                     <p class="text-muted mb-3">Compartilhe este link com seus clientes para que possam agendar serviços:</p>
-                    
+
                     <div class="input-group mb-3">
                         <input type="text" class="form-control" id="agendamentoUrl" value="{{ agendamento_url }}" readonly>
                         <button class="btn btn-outline-primary" type="button" onclick="copiarLink()">
                             <i class="fas fa-copy me-1"></i>Copiar
                         </button>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-6">
                             <button class="btn btn-success btn-sm w-100" onclick="compartilharWhatsApp()">
@@ -272,7 +271,7 @@ function copiarLink() {
         btn.innerHTML = '<i class="fas fa-check me-1"></i>Copiado!';
         btn.classList.remove('btn-outline-primary');
         btn.classList.add('btn-success');
-        
+
         setTimeout(function() {
             btn.innerHTML = originalText;
             btn.classList.remove('btn-success');
@@ -283,15 +282,15 @@ function copiarLink() {
 
 function compartilharWhatsApp() {
     const url = document.getElementById('agendamentoUrl').value;
-    const texto = `Agende seu horário no {{ comerciante.nome_salao }}! Acesse: ${url}`;
+    const texto = `Agende seu horário no {{ comerciante.nome_estabelecimento }}! Acesse: ${url}`;
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(texto)}`;
     window.open(whatsappUrl, '_blank');
 }
 
 function compartilharEmail() {
     const url = document.getElementById('agendamentoUrl').value;
-    const assunto = 'Agendamento - {{ comerciante.nome_salao }}';
-    const corpo = `Olá!\n\nVocê pode agendar seu horário no {{ comerciante.nome_salao }} através do link:\n\n${url}\n\nEscolha o serviço e horário que preferir!\n\nAguardamos você!`;
+    const assunto = 'Agendamento - {{ comerciante.nome_estabelecimento }}';
+    const corpo = `Olá!\n\nVocê pode agendar seu horário no {{ comerciante.nome_estabelecimento }} através do link:\n\n${url}\n\nEscolha o serviço e horário que preferir!\n\nAguardamos você!`;
     const emailUrl = `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
     window.location.href = emailUrl;
 }

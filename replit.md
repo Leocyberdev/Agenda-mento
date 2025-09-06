@@ -1,8 +1,8 @@
-# Salão Agendamento - Sistema de Agendamento para Salões de Beleza
+# Sistema de Agendamento - Plataforma Universal de Agendamentos
 
 ## Overview
 
-This is a Django-based appointment scheduling system designed for beauty salons and hair salons. The application provides a multi-user platform where administrators can manage merchants (salon owners), merchants can manage their employees and services, and customers can book appointments through a public interface. The system supports role-based access control with three user types: administrators, merchants (salon owners), and employees.
+This is a Django-based appointment scheduling system designed for service-based businesses such as dental clinics, beauty salons, medical clinics, barbershops, and other professional service establishments. The application provides a multi-user platform where administrators can manage business owners, business owners can manage their employees and services, and customers can book appointments through a public interface. The system supports role-based access control with three user types: administrators, business owners, and employees.
 
 ## User Preferences
 
@@ -16,7 +16,7 @@ The application is built on Django 5.2.6, following the Model-View-Template (MVT
 ### Database Design
 The system uses Django's ORM with the following core models:
 - **Custom User Model**: Extends AbstractUser with additional fields for user types (admin, comerciante, funcionario), phone, birth date, profile photo, and status tracking
-- **Comerciante (Merchant)**: Represents salon owners with business information including salon name, CNPJ, address, business hours, and logo
+- **Comerciante (Business Owner)**: Represents business owners with establishment information including business name, CNPJ, address, business hours, and logo
 - **Funcionario (Employee)**: Links employees to merchants with specializations and schedule management
 - **Servico (Service)**: Defines services offered by salons with pricing and duration
 - **Cliente (Client)**: Customer information for appointment booking

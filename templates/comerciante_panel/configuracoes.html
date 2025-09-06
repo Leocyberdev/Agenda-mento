@@ -1,4 +1,3 @@
-
 {% extends 'comerciante_panel/base_comerciante.html' %}
 {% load static %}
 
@@ -20,10 +19,10 @@
             <div class="card-body">
                 <form method="post" enctype="multipart/form-data">
                     {% csrf_token %}
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
-                            <label for="nome_salao" class="form-label">Nome do Salão *</label>
+                            <label for="nome_salao" class="form-label">Nome do Estabelecimento *</label>
                             <input type="text" class="form-control" id="nome_salao" name="nome_salao" 
                                    value="{{ comerciante.nome_salao }}" required>
                         </div>
@@ -46,7 +45,7 @@
                                    value="{{ comerciante.telefone_comercial }}" required>
                         </div>
                         <div class="col-md-6 mb-3">
-                            <label for="logo" class="form-label">Logo do Salão</label>
+                            <label for="logo" class="form-label">Logo do Estabelecimento</label>
                             <input type="file" class="form-control" id="logo" name="logo" accept="image/*">
                             {% if comerciante.logo %}
                                 <small class="text-muted">Logo atual: {{ comerciante.logo.name }}</small>
@@ -69,7 +68,7 @@
             </div>
         </div>
     </div>
-    
+
     <div class="col-lg-4">
         <div class="card shadow">
             <div class="card-header py-3">
