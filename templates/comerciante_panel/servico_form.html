@@ -1,0 +1,140 @@
+
+{% extends 'comerciante_panel/base_comerciante.html' %}
+
+{% block title %}{{ title }} - {{ comerciante.nome_salao }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">{{ title }}</h1>
+        <a href="{% url 'comerciante_panel:servicos_list' %}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-{{ message.tags }} alert-dismissible fade show" role="alert">
+            {{ message }}
+            <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                <span aria-hidden="true">&times;</span>
+            </button>
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">{{ title }}</h6>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="form-group">
+                            <label for="nome">Nome do Serviço *</label>
+                            <input type="text" class="form-control" id="nome" name="nome" 
+                                   value="{% if servico %}{{ servico.nome }}{% endif %}" required>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="descricao">Descrição</label>
+                            <textarea class="form-control" id="descricao" name="descricao" rows="3">{% if servico %}{{ servico.descricao }}{% endif %}</textarea>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="preco">Preço (R$) *</label>
+                                    <input type="number" class="form-control" id="preco" name="preco" 
+                                           step="0.01" min="0" value="{% if servico %}{{ servico.preco }}{% endif %}" required>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="duracao_minutos">Duração (minutos) *</label>
+                                    <input type="number" class="form-control" id="duracao_minutos" name="duracao_minutos" 
+                                           min="1" value="{% if servico %}{{ servico.duracao_minutos }}{% endif %}" required>
+                                </div>
+                            </div>
+                        </div>
+
+                        {% if funcionarios %}
+                        <div class="form-group">
+                            <label>Funcionários que realizam este serviço</label>
+                            <div class="row">
+                                {% for funcionario in funcionarios %}
+                                <div class="col-md-6 mb-2">
+                                    <div class="custom-control custom-checkbox">
+                                        <input type="checkbox" class="custom-control-input" 
+                                               id="funcionario_{{ funcionario.id }}" 
+                                               name="funcionarios" value="{{ funcionario.id }}"
+                                               {% if servico and funcionario in servico.funcionarios.all %}checked{% endif %}>
+                                        <label class="custom-control-label" for="funcionario_{{ funcionario.id }}">
+                                            {{ funcionario.user.get_full_name }}
+                                        </label>
+                                    </div>
+                                </div>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        {% if action == 'edit' %}
+                        <div class="form-group">
+                            <div class="custom-control custom-checkbox">
+                                <input type="checkbox" class="custom-control-input" id="ativo" name="ativo"
+                                       {% if not servico or servico.ativo %}checked{% endif %}>
+                                <label class="custom-control-label" for="ativo">
+                                    Serviço ativo
+                                </label>
+                            </div>
+                        </div>
+                        {% endif %}
+
+                        <div class="form-group mb-0">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save"></i> 
+                                {% if action == 'create' %}Criar Serviço{% else %}Atualizar Serviço{% endif %}
+                            </button>
+                            <a href="{% url 'comerciante_panel:servicos_list' %}" class="btn btn-secondary ml-2">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-lg-4">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Dicas</h6>
+                </div>
+                <div class="card-body">
+                    <ul class="list-unstyled mb-0">
+                        <li class="mb-2">
+                            <i class="fas fa-info-circle text-info mr-2"></i>
+                            <strong>Nome:</strong> Seja descritivo e claro
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-info-circle text-info mr-2"></i>
+                            <strong>Preço:</strong> Use ponto para decimais (ex: 25.50)
+                        </li>
+                        <li class="mb-2">
+                            <i class="fas fa-info-circle text-info mr-2"></i>
+                            <strong>Duração:</strong> Tempo estimado em minutos
+                        </li>
+                        <li class="mb-0">
+                            <i class="fas fa-info-circle text-info mr-2"></i>
+                            <strong>Funcionários:</strong> Selecione quem pode realizar este serviço
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -11,6 +11,7 @@ urlpatterns = [
     path('servicos/', views.servicos_list, name='servicos_list'),
     path('servicos/create/', views.servico_create, name='servico_create'),
     path('servicos/<int:pk>/edit/', views.servico_edit, name='servico_edit'),
+    path('servicos/<int:pk>/delete/', views.servico_delete, name='servico_delete'),
     path('agendamentos/', views.agendamentos_list, name='agendamentos_list'),
     path('agendamentos/<int:pk>/edit/', views.agendamento_edit, name='agendamento_edit'),
     path('funcionario-dashboard/', views.funcionario_dashboard, name='funcionario_dashboard'),

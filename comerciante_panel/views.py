@@ -300,6 +300,27 @@ def servico_edit(request, pk):
     })
 
 @login_required
+@user_passes_test(is_comerciante)
+def servico_delete(request, pk):
+    """Exclui um serviço"""
+    comerciante = request.user.comerciante
+    servico = get_object_or_404(Servico, pk=pk, comerciante=comerciante)
+    
+    if request.method == 'POST':
+        try:
+            servico_nome = servico.nome
+            servico.delete()
+            messages.success(request, f'Serviço {servico_nome} excluído com sucesso!')
+        except Exception as e:
+            messages.error(request, f'Erro ao excluir serviço: {str(e)}')
+        return redirect('comerciante_panel:servicos_list')
+    
+    return render(request, 'comerciante_panel/servico_confirm_delete.html', {
+        'servico': servico,
+        'comerciante': comerciante
+    })
+
+@login_required
 @user_passes_test(is_comerciante_or_funcionario)
 def agendamentos_list(request):
     """Lista agendamentos"""

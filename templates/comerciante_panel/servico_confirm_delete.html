@@ -1,0 +1,52 @@
+
+{% extends 'comerciante_panel/base_comerciante.html' %}
+
+{% block title %}Excluir Serviço - {{ comerciante.nome_salao }}{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-sm-flex align-items-center justify-content-between mb-4">
+        <h1 class="h3 mb-0 text-gray-800">Excluir Serviço</h1>
+        <a href="{% url 'comerciante_panel:servicos_list' %}" class="btn btn-secondary btn-sm">
+            <i class="fas fa-arrow-left"></i> Voltar
+        </a>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+            <div class="card shadow">
+                <div class="card-header py-3 bg-danger">
+                    <h6 class="m-0 font-weight-bold text-white">
+                        <i class="fas fa-exclamation-triangle"></i> Confirmação de Exclusão
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p>Você tem certeza que deseja excluir o serviço:</p>
+                    <div class="alert alert-warning">
+                        <strong>{{ servico.nome }}</strong><br>
+                        <small>{{ servico.descricao }}</small><br>
+                        <strong>Preço:</strong> R$ {{ servico.preco }}<br>
+                        <strong>Duração:</strong> {{ servico.duracao_minutos }} minutos
+                    </div>
+                    
+                    <div class="alert alert-danger">
+                        <strong>Atenção:</strong> Esta ação não pode ser desfeita. Todos os agendamentos relacionados a este serviço também serão afetados.
+                    </div>
+
+                    <form method="post">
+                        {% csrf_token %}
+                        <div class="text-right">
+                            <a href="{% url 'comerciante_panel:servicos_list' %}" class="btn btn-secondary mr-2">
+                                <i class="fas fa-times"></i> Cancelar
+                            </a>
+                            <button type="submit" class="btn btn-danger">
+                                <i class="fas fa-trash"></i> Confirmar Exclusão
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
