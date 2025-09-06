@@ -48,11 +48,16 @@ CSRF_COOKIE_DOMAIN = None
 CSRF_COOKIE_AGE = 31449600  # 1 year
 CSRF_COOKIE_PATH = '/'
 
-# Session settings for iframe compatibility
+# Session settings for iframe compatibility  
 SESSION_COOKIE_SECURE = False
-SESSION_COOKIE_SAMESITE = 'None'  # Allow cross-site for iframe
-SESSION_COOKIE_HTTPONLY = True
+SESSION_COOKIE_SAMESITE = 'Lax'  # More compatible than None for Replit
+SESSION_COOKIE_HTTPONLY = False  # Allow JavaScript access in iframe
 SESSION_SAVE_EVERY_REQUEST = True
+SESSION_COOKIE_AGE = 1209600  # 2 weeks
+SESSION_EXPIRE_AT_BROWSER_CLOSE = False
+SESSION_COOKIE_NAME = 'sessionid'
+SESSION_COOKIE_PATH = '/'
+SESSION_COOKIE_DOMAIN = None
 
 # Frame options for iframe support
 X_FRAME_OPTIONS = 'SAMEORIGIN'
