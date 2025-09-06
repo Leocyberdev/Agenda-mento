@@ -37,14 +37,16 @@ CSRF_TRUSTED_ORIGINS = [
     'https://7d5a1075-2847-4d5c-9a9d-dc9170acf1ec-00-kwdx5bbbnvz3.kirk.replit.dev',
 ]
 
-# CSRF settings optimized for Replit iframe environment
+# CSRF settings optimized for Replit development environment
 CSRF_COOKIE_SECURE = False
 CSRF_COOKIE_HTTPONLY = False
-CSRF_COOKIE_SAMESITE = 'None'  # Allow cross-site for iframe
-CSRF_USE_SESSIONS = True  # Use sessions instead of cookies for CSRF
+CSRF_COOKIE_SAMESITE = 'Lax'  # More permissive for development
+CSRF_USE_SESSIONS = False  # Use cookies for better compatibility
 CSRF_COOKIE_NAME = 'csrftoken'
 CSRF_HEADER_NAME = 'HTTP_X_CSRFTOKEN'
-CSRF_COOKIE_DOMAIN = None  # Let Django auto-detect
+CSRF_COOKIE_DOMAIN = None
+CSRF_COOKIE_AGE = 31449600  # 1 year
+CSRF_COOKIE_PATH = '/'
 
 # Session settings for iframe compatibility
 SESSION_COOKIE_SECURE = False
@@ -78,7 +80,7 @@ MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    'accounts.csrf_middleware.ReplitCsrfMiddleware',  # Middleware customizado para Replit
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'accounts.middleware.UserTypeMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
