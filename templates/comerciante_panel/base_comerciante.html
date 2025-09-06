@@ -45,6 +45,13 @@
                     Link de Agendamento
                 </a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link {% if request.resolver_match.url_name == 'configuracoes' %}active{% endif %}" 
+                   href="{% url 'comerciante_panel:configuracoes' %}">
+                    <i class="fas fa-cog me-2"></i>
+                    Configurações
+                </a>
+            </li>
             {% endif %}
         </ul>
         

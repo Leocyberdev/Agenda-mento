@@ -1,0 +1,92 @@
+
+{% extends 'comerciante_panel/base_comerciante.html' %}
+{% load static %}
+
+{% block title %}Configurações - {{ comerciante.nome_salao }}{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-cog me-2"></i>Configurações
+    </h1>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Dados do Estabelecimento</h6>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="nome_salao" class="form-label">Nome do Salão *</label>
+                            <input type="text" class="form-control" id="nome_salao" name="nome_salao" 
+                                   value="{{ comerciante.nome_salao }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="cnpj" class="form-label">CNPJ</label>
+                            <input type="text" class="form-control" id="cnpj" name="cnpj" 
+                                   value="{{ comerciante.cnpj|default:'' }}" placeholder="00.000.000/0001-00">
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="endereco" class="form-label">Endereço *</label>
+                        <textarea class="form-control" id="endereco" name="endereco" rows="3" required>{{ comerciante.endereco }}</textarea>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="telefone_comercial" class="form-label">Telefone Comercial *</label>
+                            <input type="text" class="form-control" id="telefone_comercial" name="telefone_comercial" 
+                                   value="{{ comerciante.telefone_comercial }}" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="logo" class="form-label">Logo do Salão</label>
+                            <input type="file" class="form-control" id="logo" name="logo" accept="image/*">
+                            {% if comerciante.logo %}
+                                <small class="text-muted">Logo atual: {{ comerciante.logo.name }}</small>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="horario_funcionamento" class="form-label">Horário de Funcionamento *</label>
+                        <textarea class="form-control" id="horario_funcionamento" name="horario_funcionamento" rows="3" 
+                                  placeholder="Ex: Segunda a Sexta: 8h às 18h, Sábado: 8h às 16h" required>{{ comerciante.horario_funcionamento }}</textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Salvar Configurações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-lg-4">
+        <div class="card shadow">
+            <div class="card-header py-3">
+                <h6 class="m-0 font-weight-bold text-primary">Preview da Logo</h6>
+            </div>
+            <div class="card-body text-center">
+                {% if comerciante.logo %}
+                    <img src="{{ comerciante.logo.url }}" alt="Logo do {{ comerciante.nome_salao }}" 
+                         class="img-fluid rounded" style="max-height: 200px;">
+                {% else %}
+                    <div class="bg-light rounded p-4">
+                        <i class="fas fa-image fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">Nenhuma logo carregada</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

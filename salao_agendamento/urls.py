@@ -25,15 +25,14 @@ def home_redirect(request):
     return redirect('accounts:login')
 
 urlpatterns = [
-    path('django-admin/', admin.site.urls),
-    path('', home_redirect, name='home'),
+    path('admin/', admin.site.urls),
+    path('', lambda request: redirect('accounts:login'), name='home'),
     path('', include('accounts.urls')),
     path('admin-panel/', include('admin_panel.urls')),
     path('comerciante/', include('comerciante_panel.urls')),
     path('agendamento/', include('agendamento.urls')),
 ]
 
-# Servir arquivos de media em desenvolvimento
+# Servir arquivos de media durante desenvolvimento
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-    urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)

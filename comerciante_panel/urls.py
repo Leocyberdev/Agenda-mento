@@ -16,5 +16,7 @@ urlpatterns = [
     path('agendamentos/<int:pk>/edit/', views.agendamento_edit, name='agendamento_edit'),
     path('funcionario-dashboard/', views.funcionario_dashboard, name='funcionario_dashboard'),
     path('link-agendamento/', views.link_agendamento, name='link_agendamento'),
-]
 
+    # Configurações
+    path('configuracoes/', views.configuracoes, name='configuracoes'),
+]

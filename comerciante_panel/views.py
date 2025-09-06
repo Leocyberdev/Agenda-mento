@@ -459,3 +459,33 @@ def link_agendamento(request):
     }
     
     return render(request, 'comerciante_panel/link_agendamento.html', context)
+
+@login_required
+@user_passes_test(is_comerciante)
+def configuracoes(request):
+    """Configurações do comerciante"""
+    comerciante = request.user.comerciante
+    
+    if request.method == 'POST':
+        try:
+            comerciante.nome_salao = request.POST['nome_salao']
+            comerciante.endereco = request.POST['endereco']
+            comerciante.telefone_comercial = request.POST['telefone_comercial']
+            comerciante.horario_funcionamento = request.POST['horario_funcionamento']
+            comerciante.cnpj = request.POST.get('cnpj', '')
+            
+            # Upload da logo
+            if 'logo' in request.FILES:
+                comerciante.logo = request.FILES['logo']
+            
+            comerciante.save()
+            
+            messages.success(request, 'Configurações atualizadas com sucesso!')
+            return redirect('comerciante_panel:configuracoes')
+            
+        except Exception as e:
+            messages.error(request, f'Erro ao atualizar configurações: {str(e)}')
+    
+    return render(request, 'comerciante_panel/configuracoes.html', {
+        'comerciante': comerciante
+    })
