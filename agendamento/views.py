@@ -119,7 +119,7 @@ def get_horarios_disponiveis(request, comerciante_id, funcionario_id):
     horarios_ocupados = [h.strftime('%H:%M') for h in agendamentos_existentes]
     horarios_disponiveis = [h for h in horarios_base if h not in horarios_ocupados]
     
-    return JsonResponse({'horarios': horarios_disponiveis})t)
+    return JsonResponse({'horarios': horarios_disponiveis})
 
 
 def get_funcionarios_por_servico(request, comerciante_id, servico_id):
