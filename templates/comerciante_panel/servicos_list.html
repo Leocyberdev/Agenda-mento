@@ -56,7 +56,7 @@
                             </td>
                             <td>{{ servico.data_criacao|date:"d/m/Y" }}</td>
                             <td>
-                                <a href="{% url 'comerciante_panel:servico_update' servico.id %}" class="btn btn-info btn-sm" title="Editar">
+                                <a href="{% url 'comerciante_panel:servico_edit' servico.id %}" class="btn btn-info btn-sm" title="Editar">
                                     <i class="fas fa-edit"></i>
                                 </a>
                                 <a href="{% url 'comerciante_panel:servico_delete' servico.id %}" class="btn btn-danger btn-sm" title="Excluir">
