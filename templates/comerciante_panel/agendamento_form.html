@@ -1,0 +1,163 @@
+
+{% extends 'comerciante_panel/base_comerciante.html' %}
+{% load static %}
+
+{% block title %}Editar Agendamento - {{ comerciante.nome_salao }}{% endblock %}
+
+{% block content %}
+<div class="d-sm-flex align-items-center justify-content-between mb-4">
+    <h1 class="h3 mb-0 text-gray-800">
+        <i class="fas fa-edit me-2"></i>Editar Agendamento
+    </h1>
+    <a href="{% url 'comerciante_panel:agendamentos_list' %}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left"></i> Voltar
+    </a>
+</div>
+
+<div class="row">
+    <div class="col-lg-8">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">Informações do Agendamento</h6>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <!-- Informações do Cliente (apenas visualização) -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Cliente</label>
+                            <div class="form-control-plaintext">
+                                <strong>{{ agendamento.cliente.nome }}</strong><br>
+                                <small class="text-muted">{{ agendamento.cliente.telefone }}</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Data/Hora</label>
+                            <div class="form-control-plaintext">
+                                <strong>{{ agendamento.data_agendamento|date:"d/m/Y" }} às {{ agendamento.data_agendamento|time:"H:i" }}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Serviço</label>
+                            <div class="form-control-plaintext">
+                                <strong>{{ agendamento.servico.nome }}</strong><br>
+                                <small class="text-muted">Duração: {{ agendamento.servico.duracao_minutos }} min</small>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Funcionário</label>
+                            <div class="form-control-plaintext">
+                                <strong>{{ agendamento.funcionario.user.get_full_name }}</strong>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Campos editáveis -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="status" class="form-label">Status <span class="text-danger">*</span></label>
+                            <select class="form-select" id="status" name="status" required>
+                                {% for value, label in status_choices %}
+                                    <option value="{{ value }}" {% if agendamento.status == value %}selected{% endif %}>{{ label }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="valor_pago" class="form-label">Valor Pago</label>
+                            <input type="number" class="form-control" id="valor_pago" name="valor_pago" 
+                                   step="0.01" min="0" max="{{ agendamento.servico.preco }}" 
+                                   value="{{ agendamento.valor_pago|default:'' }}" 
+                                   placeholder="R$ {{ agendamento.servico.preco }}">
+                            <small class="text-muted">Valor do serviço: R$ {{ agendamento.servico.preco }}</small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="observacoes" class="form-label">Observações</label>
+                        <textarea class="form-control" id="observacoes" name="observacoes" rows="3" 
+                                  placeholder="Observações sobre o agendamento...">{{ agendamento.observacoes|default:'' }}</textarea>
+                    </div>
+
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'comerciante_panel:agendamentos_list' %}" class="btn btn-secondary">
+                            <i class="fas fa-times"></i> Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Salvar Alterações
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow">
+            <div class="card-header">
+                <h6 class="m-0 font-weight-bold text-primary">Histórico</h6>
+            </div>
+            <div class="card-body">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-primary"></div>
+                        <div class="timeline-content">
+                            <h6 class="mb-1">Agendamento Criado</h6>
+                            <small class="text-muted">{{ agendamento.data_criacao|date:"d/m/Y H:i" }}</small>
+                        </div>
+                    </div>
+                    {% if agendamento.data_atualizacao != agendamento.data_criacao %}
+                    <div class="timeline-item">
+                        <div class="timeline-marker bg-info"></div>
+                        <div class="timeline-content">
+                            <h6 class="mb-1">Última Atualização</h6>
+                            <small class="text-muted">{{ agendamento.data_atualizacao|date:"d/m/Y H:i" }}</small>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.timeline {
+    position: relative;
+    padding-left: 20px;
+}
+
+.timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 0;
+    height: 100%;
+    width: 2px;
+    background-color: #e3e6f0;
+}
+
+.timeline-item {
+    position: relative;
+    margin-bottom: 20px;
+}
+
+.timeline-marker {
+    position: absolute;
+    left: -16px;
+    top: 4px;
+    width: 16px;
+    height: 16px;
+    border-radius: 50%;
+    border: 2px solid #fff;
+}
+
+.timeline-content {
+    padding-left: 12px;
+}
+</style>
+{% endblock %}
