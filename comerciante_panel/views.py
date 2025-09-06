@@ -6,6 +6,7 @@ from django.core.paginator import Paginator
 from django.http import JsonResponse
 from django.db import transaction
 from django.urls import reverse
+from django.utils import timezone # Import timezone
 from accounts.models import User
 from agendamento.models import Comerciante, Funcionario, Servico, Agendamento, Cliente
 from datetime import datetime, timedelta
@@ -29,31 +30,31 @@ def get_comerciante_from_user(user):
 def dashboard(request):
     """Dashboard do comerciante"""
     comerciante = get_comerciante_from_user(request.user)
-    
+
     # Estatísticas
     total_funcionarios = comerciante.funcionarios.filter(ativo=True).count()
     total_servicos = comerciante.servicos.filter(ativo=True).count()
     total_clientes = comerciante.clientes.count()
-    
+
     # Agendamentos de hoje
     hoje = datetime.now().date()
     agendamentos_hoje = Agendamento.objects.filter(
         comerciante=comerciante,
         data_agendamento__date=hoje
     ).count()
-    
+
     # Agendamentos recentes
     agendamentos_recentes = Agendamento.objects.filter(
         comerciante=comerciante
     ).select_related('cliente', 'funcionario', 'servico').order_by('-data_criacao')[:10]
-    
+
     # Próximos agendamentos
     proximos_agendamentos = Agendamento.objects.filter(
         comerciante=comerciante,
         data_agendamento__gte=datetime.now(),
         status__in=['agendado', 'confirmado']
     ).select_related('cliente', 'funcionario', 'servico').order_by('data_agendamento')[:5]
-    
+
     context = {
         'comerciante': comerciante,
         'total_funcionarios': total_funcionarios,
@@ -63,7 +64,7 @@ def dashboard(request):
         'agendamentos_recentes': agendamentos_recentes,
         'proximos_agendamentos': proximos_agendamentos,
     }
-    
+
     return render(request, 'comerciante_panel/dashboard.html', context)
 
 @login_required
@@ -71,12 +72,12 @@ def dashboard(request):
 def funcionarios_list(request):
     """Lista funcionários do comerciante"""
     comerciante = request.user.comerciante
-    
+
     search = request.GET.get('search', '')
     status = request.GET.get('status', '')
-    
+
     funcionarios = Funcionario.objects.filter(comerciante=comerciante).select_related('user')
-    
+
     if search:
         funcionarios = funcionarios.filter(
             Q(user__first_name__icontains=search) |
@@ -84,26 +85,26 @@ def funcionarios_list(request):
             Q(user__username__icontains=search) |
             Q(especialidades__icontains=search)
         )
-    
+
     if status == 'ativo':
         funcionarios = funcionarios.filter(ativo=True)
     elif status == 'inativo':
         funcionarios = funcionarios.filter(ativo=False)
-    
+
     funcionarios = funcionarios.order_by('-data_contratacao')
-    
+
     # Paginação
     paginator = Paginator(funcionarios, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+
     context = {
         'page_obj': page_obj,
         'search': search,
         'status': status,
         'comerciante': comerciante,
     }
-    
+
     return render(request, 'comerciante_panel/funcionarios_list.html', context)
 
 @login_required
@@ -111,7 +112,7 @@ def funcionarios_list(request):
 def funcionario_create(request):
     """Cria um novo funcionário"""
     comerciante = request.user.comerciante
-    
+
     if request.method == 'POST':
         try:
             with transaction.atomic():
@@ -125,7 +126,7 @@ def funcionario_create(request):
                     tipo_usuario='funcionario',
                     telefone=request.POST.get('telefone', '')
                 )
-                
+
                 # Criar funcionário
                 funcionario = Funcionario.objects.create(
                     user=user,
@@ -134,13 +135,13 @@ def funcionario_create(request):
                     horario_trabalho=request.POST['horario_trabalho'],
                     comissao_percentual=request.POST.get('comissao_percentual', 30)
                 )
-                
+
                 messages.success(request, f'Funcionário {funcionario.user.get_full_name()} criado com sucesso!')
                 return redirect('comerciante_panel:funcionarios_list')
-                
+
         except Exception as e:
             messages.error(request, f'Erro ao criar funcionário: {str(e)}')
-    
+
     return render(request, 'comerciante_panel/funcionario_form.html', {
         'title': 'Criar Funcionário',
         'action': 'create',
@@ -153,7 +154,7 @@ def funcionario_edit(request, pk):
     """Edita um funcionário"""
     comerciante = request.user.comerciante
     funcionario = get_object_or_404(Funcionario, pk=pk, comerciante=comerciante)
-    
+
     if request.method == 'POST':
         try:
             with transaction.atomic():
@@ -164,26 +165,26 @@ def funcionario_edit(request, pk):
                 user.first_name = request.POST['first_name']
                 user.last_name = request.POST['last_name']
                 user.telefone = request.POST.get('telefone', '')
-                
+
                 # Atualizar senha se fornecida
                 if request.POST.get('password'):
                     user.set_password(request.POST['password'])
-                
+
                 user.save()
-                
+
                 # Atualizar funcionário
                 funcionario.especialidades = request.POST['especialidades']
                 funcionario.horario_trabalho = request.POST['horario_trabalho']
                 funcionario.comissao_percentual = request.POST.get('comissao_percentual', 30)
                 funcionario.ativo = request.POST.get('ativo') == 'on'
                 funcionario.save()
-                
+
                 messages.success(request, f'Funcionário {funcionario.user.get_full_name()} atualizado com sucesso!')
                 return redirect('comerciante_panel:funcionarios_list')
-                
+
         except Exception as e:
             messages.error(request, f'Erro ao atualizar funcionário: {str(e)}')
-    
+
     return render(request, 'comerciante_panel/funcionario_form.html', {
         'title': 'Editar Funcionário',
         'action': 'edit',
@@ -196,37 +197,37 @@ def funcionario_edit(request, pk):
 def servicos_list(request):
     """Lista serviços do comerciante"""
     comerciante = request.user.comerciante
-    
+
     search = request.GET.get('search', '')
     status = request.GET.get('status', '')
-    
+
     servicos = Servico.objects.filter(comerciante=comerciante).prefetch_related('funcionarios')
-    
+
     if search:
         servicos = servicos.filter(
             Q(nome__icontains=search) |
             Q(descricao__icontains=search)
         )
-    
+
     if status == 'ativo':
         servicos = servicos.filter(ativo=True)
     elif status == 'inativo':
         servicos = servicos.filter(ativo=False)
-    
+
     servicos = servicos.order_by('nome')
-    
+
     # Paginação
     paginator = Paginator(servicos, 10)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+
     context = {
         'page_obj': page_obj,
         'search': search,
         'status': status,
         'comerciante': comerciante,
     }
-    
+
     return render(request, 'comerciante_panel/servicos_list.html', context)
 
 @login_required
@@ -235,7 +236,7 @@ def servico_create(request):
     """Cria um novo serviço"""
     comerciante = request.user.comerciante
     funcionarios = comerciante.funcionarios.filter(ativo=True)
-    
+
     if request.method == 'POST':
         try:
             servico = Servico.objects.create(
@@ -245,18 +246,18 @@ def servico_create(request):
                 preco=request.POST['preco'],
                 duracao_minutos=request.POST['duracao_minutos']
             )
-            
+
             # Adicionar funcionários selecionados
             funcionarios_ids = request.POST.getlist('funcionarios')
             if funcionarios_ids:
                 servico.funcionarios.set(funcionarios_ids)
-            
+
             messages.success(request, f'Serviço {servico.nome} criado com sucesso!')
             return redirect('comerciante_panel:servicos_list')
-            
+
         except Exception as e:
             messages.error(request, f'Erro ao criar serviço: {str(e)}')
-    
+
     return render(request, 'comerciante_panel/servico_form.html', {
         'title': 'Criar Serviço',
         'action': 'create',
@@ -271,7 +272,7 @@ def servico_edit(request, pk):
     comerciante = request.user.comerciante
     servico = get_object_or_404(Servico, pk=pk, comerciante=comerciante)
     funcionarios = comerciante.funcionarios.filter(ativo=True)
-    
+
     if request.method == 'POST':
         try:
             servico.nome = request.POST['nome']
@@ -280,17 +281,17 @@ def servico_edit(request, pk):
             servico.duracao_minutos = request.POST['duracao_minutos']
             servico.ativo = request.POST.get('ativo') == 'on'
             servico.save()
-            
+
             # Atualizar funcionários
             funcionarios_ids = request.POST.getlist('funcionarios')
             servico.funcionarios.set(funcionarios_ids)
-            
+
             messages.success(request, f'Serviço {servico.nome} atualizado com sucesso!')
             return redirect('comerciante_panel:servicos_list')
-            
+
         except Exception as e:
             messages.error(request, f'Erro ao atualizar serviço: {str(e)}')
-    
+
     return render(request, 'comerciante_panel/servico_form.html', {
         'title': 'Editar Serviço',
         'action': 'edit',
@@ -305,7 +306,7 @@ def servico_delete(request, pk):
     """Exclui um serviço"""
     comerciante = request.user.comerciante
     servico = get_object_or_404(Servico, pk=pk, comerciante=comerciante)
-    
+
     if request.method == 'POST':
         try:
             servico_nome = servico.nome
@@ -314,7 +315,7 @@ def servico_delete(request, pk):
         except Exception as e:
             messages.error(request, f'Erro ao excluir serviço: {str(e)}')
         return redirect('comerciante_panel:servicos_list')
-    
+
     return render(request, 'comerciante_panel/servico_confirm_delete.html', {
         'servico': servico,
         'comerciante': comerciante
@@ -325,44 +326,44 @@ def servico_delete(request, pk):
 def agendamentos_list(request):
     """Lista agendamentos"""
     comerciante = get_comerciante_from_user(request.user)
-    
+
     # Filtros
     search = request.GET.get('search', '')
     status = request.GET.get('status', '')
     data_inicio = request.GET.get('data_inicio', '')
     data_fim = request.GET.get('data_fim', '')
-    
+
     agendamentos = Agendamento.objects.filter(comerciante=comerciante).select_related(
         'cliente', 'funcionario__user', 'servico'
     )
-    
+
     # Se for funcionário, mostrar apenas seus agendamentos
     if request.user.is_funcionario():
         agendamentos = agendamentos.filter(funcionario=request.user.funcionario)
-    
+
     if search:
         agendamentos = agendamentos.filter(
             Q(cliente__nome__icontains=search) |
             Q(cliente__email__icontains=search) |
             Q(servico__nome__icontains=search)
         )
-    
+
     if status:
         agendamentos = agendamentos.filter(status=status)
-    
+
     if data_inicio:
         agendamentos = agendamentos.filter(data_agendamento__date__gte=data_inicio)
-    
+
     if data_fim:
         agendamentos = agendamentos.filter(data_agendamento__date__lte=data_fim)
-    
+
     agendamentos = agendamentos.order_by('-data_agendamento')
-    
+
     # Paginação
     paginator = Paginator(agendamentos, 15)
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
-    
+
     context = {
         'page_obj': page_obj,
         'search': search,
@@ -372,7 +373,7 @@ def agendamentos_list(request):
         'comerciante': comerciante,
         'status_choices': Agendamento.STATUS_CHOICES,
     }
-    
+
     return render(request, 'comerciante_panel/agendamentos_list.html', context)
 
 @login_required
@@ -381,28 +382,28 @@ def agendamento_edit(request, pk):
     """Edita um agendamento"""
     comerciante = get_comerciante_from_user(request.user)
     agendamento = get_object_or_404(Agendamento, pk=pk, comerciante=comerciante)
-    
+
     # Se for funcionário, só pode editar seus próprios agendamentos
     if request.user.is_funcionario() and agendamento.funcionario != request.user.funcionario:
         messages.error(request, 'Você só pode editar seus próprios agendamentos.')
         return redirect('comerciante_panel:agendamentos_list')
-    
+
     if request.method == 'POST':
         try:
             agendamento.status = request.POST['status']
             agendamento.observacoes = request.POST.get('observacoes', '')
-            
+
             if request.POST.get('valor_pago'):
                 agendamento.valor_pago = request.POST['valor_pago']
-            
+
             agendamento.save()
-            
+
             messages.success(request, 'Agendamento atualizado com sucesso!')
             return redirect('comerciante_panel:agendamentos_list')
-            
+
         except Exception as e:
             messages.error(request, f'Erro ao atualizar agendamento: {str(e)}')
-    
+
     return render(request, 'comerciante_panel/agendamento_form.html', {
         'agendamento': agendamento,
         'status_choices': Agendamento.STATUS_CHOICES,
@@ -413,33 +414,41 @@ def agendamento_edit(request, pk):
 @user_passes_test(is_comerciante_or_funcionario)
 def funcionario_dashboard(request):
     """Dashboard específico para funcionários"""
-    if not request.user.is_funcionario():
-        return redirect('comerciante_panel:dashboard')
-    
-    funcionario = request.user.funcionario
-    comerciante = funcionario.comerciante
-    
-    # Agendamentos do funcionário hoje
-    hoje = datetime.now().date()
+    try:
+        funcionario = request.user.funcionario
+        comerciante = funcionario.comerciante
+    except:
+        messages.error(request, 'Acesso negado. Você não está cadastrado como funcionário.')
+        return redirect('accounts:login')
+
+    # Agendamentos de hoje do funcionário
+    hoje = timezone.now().date()
     agendamentos_hoje = Agendamento.objects.filter(
         funcionario=funcionario,
         data_agendamento__date=hoje
-    ).select_related('cliente', 'servico').order_by('data_agendamento')
-    
-    # Próximos agendamentos
+    ).order_by('data_agendamento')
+
+    # Próximos agendamentos (próximos 7 dias)
+    proxima_semana = hoje + timedelta(days=7)
     proximos_agendamentos = Agendamento.objects.filter(
         funcionario=funcionario,
-        data_agendamento__gte=datetime.now(),
-        status__in=['agendado', 'confirmado']
-    ).select_related('cliente', 'servico').order_by('data_agendamento')[:5]
-    
+        data_agendamento__date__gt=hoje,
+        data_agendamento__date__lte=proxima_semana
+    ).order_by('data_agendamento')[:5]
+
+    # URL do link de agendamento
+    agendamento_url = request.build_absolute_uri(
+        reverse('agendamento:agendar_servico', kwargs={'comerciante_id': comerciante.id})
+    )
+
     context = {
         'funcionario': funcionario,
         'comerciante': comerciante,
         'agendamentos_hoje': agendamentos_hoje,
         'proximos_agendamentos': proximos_agendamentos,
+        'agendamento_url': agendamento_url,
     }
-    
+
     return render(request, 'comerciante_panel/funcionario_dashboard.html', context)
 
 @login_required
@@ -447,17 +456,17 @@ def funcionario_dashboard(request):
 def link_agendamento(request):
     """Gera link de agendamento para clientes"""
     comerciante = request.user.comerciante
-    
+
     # URL do link de agendamento
     agendamento_url = request.build_absolute_uri(
         reverse('agendamento:agendar_servico', kwargs={'comerciante_id': comerciante.id})
     )
-    
+
     context = {
         'comerciante': comerciante,
         'agendamento_url': agendamento_url,
     }
-    
+
     return render(request, 'comerciante_panel/link_agendamento.html', context)
 
 @login_required
@@ -465,7 +474,7 @@ def link_agendamento(request):
 def configuracoes(request):
     """Configurações do comerciante"""
     comerciante = request.user.comerciante
-    
+
     if request.method == 'POST':
         try:
             comerciante.nome_salao = request.POST['nome_salao']
@@ -473,19 +482,19 @@ def configuracoes(request):
             comerciante.telefone_comercial = request.POST['telefone_comercial']
             comerciante.horario_funcionamento = request.POST['horario_funcionamento']
             comerciante.cnpj = request.POST.get('cnpj', '')
-            
+
             # Upload da logo
             if 'logo' in request.FILES:
                 comerciante.logo = request.FILES['logo']
-            
+
             comerciante.save()
-            
+
             messages.success(request, 'Configurações atualizadas com sucesso!')
             return redirect('comerciante_panel:configuracoes')
-            
+
         except Exception as e:
             messages.error(request, f'Erro ao atualizar configurações: {str(e)}')
-    
+
     return render(request, 'comerciante_panel/configuracoes.html', {
         'comerciante': comerciante
     })

@@ -187,9 +187,9 @@
         </div>
     </div>
 
-    <!-- Informações do funcionário -->
     <div class="row">
-        <div class="col-12">
+        <!-- Informações do funcionário -->
+        <div class="col-lg-6 mb-4">
             <div class="card">
                 <div class="card-header">
                     <h6 class="m-0 font-weight-bold text-primary">
@@ -198,17 +198,46 @@
                     </h6>
                 </div>
                 <div class="card-body">
+                    <p><strong>Nome:</strong> {{ funcionario.user.get_full_name }}</p>
+                    <p><strong>Email:</strong> {{ funcionario.user.email }}</p>
+                    <p><strong>Telefone:</strong> {{ funcionario.user.telefone|default:"Não informado" }}</p>
+                    <p><strong>Especialidades:</strong></p>
+                    <p class="text-muted">{{ funcionario.especialidades }}</p>
+                    <p><strong>Horário de Trabalho:</strong></p>
+                    <p class="text-muted">{{ funcionario.horario_trabalho }}</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Link de Agendamento -->
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-link me-2"></i>
+                        Link de Agendamento
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-3">Compartilhe este link com seus clientes para que possam agendar serviços:</p>
+                    
+                    <div class="input-group mb-3">
+                        <input type="text" class="form-control" id="agendamentoUrl" value="{{ agendamento_url }}" readonly>
+                        <button class="btn btn-outline-primary" type="button" onclick="copiarLink()">
+                            <i class="fas fa-copy me-1"></i>Copiar
+                        </button>
+                    </div>
+                    
                     <div class="row">
-                        <div class="col-md-6">
-                            <p><strong>Nome:</strong> {{ funcionario.user.get_full_name }}</p>
-                            <p><strong>Email:</strong> {{ funcionario.user.email }}</p>
-                            <p><strong>Telefone:</strong> {{ funcionario.user.telefone|default:"Não informado" }}</p>
+                        <div class="col-6">
+                            <button class="btn btn-success btn-sm w-100" onclick="compartilharWhatsApp()">
+                                <i class="fab fa-whatsapp me-1"></i>WhatsApp
+                            </button>
                         </div>
-                        <div class="col-md-6">
-                            <p><strong>Especialidades:</strong></p>
-                            <p class="text-muted">{{ funcionario.especialidades }}</p>
-                            <p><strong>Horário de Trabalho:</strong></p>
-                            <p class="text-muted">{{ funcionario.horario_trabalho }}</p>
+                        <div class="col-6">
+                            <button class="btn btn-secondary btn-sm w-100" onclick="compartilharEmail()">
+                                <i class="fas fa-envelope me-1"></i>Email
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -230,4 +259,41 @@
     font-size: 0.7rem;
 }
 </style>
+
+<script>
+function copiarLink() {
+    const url = document.getElementById('agendamentoUrl');
+    url.select();
+    url.setSelectionRange(0, 99999);
+    navigator.clipboard.writeText(url.value).then(function() {
+        // Feedback visual
+        const btn = event.target.closest('button');
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-check me-1"></i>Copiado!';
+        btn.classList.remove('btn-outline-primary');
+        btn.classList.add('btn-success');
+        
+        setTimeout(function() {
+            btn.innerHTML = originalText;
+            btn.classList.remove('btn-success');
+            btn.classList.add('btn-outline-primary');
+        }, 2000);
+    });
+}
+
+function compartilharWhatsApp() {
+    const url = document.getElementById('agendamentoUrl').value;
+    const texto = `Agende seu horário no {{ comerciante.nome_salao }}! Acesse: ${url}`;
+    const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(texto)}`;
+    window.open(whatsappUrl, '_blank');
+}
+
+function compartilharEmail() {
+    const url = document.getElementById('agendamentoUrl').value;
+    const assunto = 'Agendamento - {{ comerciante.nome_salao }}';
+    const corpo = `Olá!\n\nVocê pode agendar seu horário no {{ comerciante.nome_salao }} através do link:\n\n${url}\n\nEscolha o serviço e horário que preferir!\n\nAguardamos você!`;
+    const emailUrl = `mailto:?subject=${encodeURIComponent(assunto)}&body=${encodeURIComponent(corpo)}`;
+    window.location.href = emailUrl;
+}
+</script>
 {% endblock %}
